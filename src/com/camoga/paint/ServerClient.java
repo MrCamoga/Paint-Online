@@ -236,8 +236,9 @@ public class ServerClient extends JPanel implements Runnable {
 	}
 
 	public void imagepacket(int[] pixels, int num, int imageid) {
+//		System.out.println(num);
 		for (int i = 0; i < pixels.length; i++) {
-			image.get(imageid).getPixels()[(num * 254 + i)] = pixels[i];
+			image.get(imageid).getPixels()[(num * 64 + i)] = pixels[i];
 		}
 	}
 

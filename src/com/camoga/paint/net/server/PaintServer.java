@@ -11,13 +11,13 @@ public class PaintServer {
 	public static PaintServer ps;
 	public ArrayList<int[]> pixels = new ArrayList<>();
 	public ArrayList<int[]> size = new ArrayList<>();
-	private static final int defaultWidth = 16;
-	private static final int defaultHeight = 16;
+	private static final int defaultWidth = 64;
+	private static final int defaultHeight = 64;
 
 	public PaintServer() {
 		ps = this;
-		pixels.add(new int[64*64]);
-		size.add(new int[]{64,64});
+		pixels.add(new int[defaultWidth*defaultHeight]);
+		size.add(new int[]{defaultWidth,defaultHeight});
 		init(0);
 	}
 
@@ -47,10 +47,10 @@ public class PaintServer {
 		int WIDTH = this.size.get(imageid)[0];
 		int HEIGHT = this.size.get(imageid)[1];
 		if(queue.size()>0) queue.remove(0);
-		while(pixels.get(imageid)[x + (y-1)*WIDTH] == targetColor) {
+		while(y > 0 && pixels.get(imageid)[x + (y-1)*WIDTH] == targetColor) {
 			y--;
 		}
-		while(pixels.get(imageid)[x + (y)*WIDTH] == targetColor) {
+		while(y < HEIGHT && pixels.get(imageid)[x + (y)*WIDTH] == targetColor) {
 			pixels.get(imageid)[x + y * WIDTH] = color;
 			if(pixels.get(imageid)[x-1 + y*WIDTH] == targetColor) {
 				int ytemp = y;

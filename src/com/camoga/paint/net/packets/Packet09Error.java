@@ -1,5 +1,7 @@
 package com.camoga.paint.net.packets;
 
+import java.nio.ByteBuffer;
+
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -9,14 +11,16 @@ public class Packet09Error extends Packet {
 	
 	public Packet09Error(byte[] data) {
 		super(9);
-		String[] dataArray = readData(data).split(",");
-		type = Integer.parseInt(dataArray[0]);
-		a = Integer.parseInt(dataArray[1]);
+//		String[] dataArray = readData(data).split(",");
+		int[] i = new int[2];
+		ByteBuffer.wrap(data, 1, 8).asIntBuffer().get(i);
+		type = i[0];
+		a = i[1];
 	}
 	
 	/**
 	 * 
-	 * @param type 0 = version discordance
+	 * @param type 0 = different version
 	 */
 	
 	public Packet09Error(int type, int a) {
@@ -35,7 +39,13 @@ public class Packet09Error extends Packet {
 
 	//TODO getData
 	public byte[] getData() {
-		return null;
+		byte[] data = new byte[9];
+		data[0] = 9;
+		ByteBuffer bb = ByteBuffer.allocate(8);
+		bb.putInt(type);
+		bb.putInt(a);
+		System.arraycopy(bb.array(), 0, data, 1, 8);
+		return data;
 	}
 	
 	public int getType() {

@@ -71,7 +71,7 @@ public class ServerSocket extends Thread {
 			frame.setVisible(true);
 		}
 		
-		load();
+//		load();
 		
 		paint = new PaintServer();
 		
@@ -80,10 +80,6 @@ public class ServerSocket extends Thread {
 		} catch(SocketException e) {
 			e.printStackTrace();
 		}
-	}
-	
-	public void load() {
-		
 	}
 	
 	public void run() {
@@ -120,21 +116,17 @@ public class ServerSocket extends Thread {
 			}
 			System.out.println(new String(packet.getData()).trim());
 			parsePacket(packet.getData(), packet.getAddress(), packet.getPort());
-//			String message = new String(packet.getData()).trim();
-//			System.out.println("[CLIENT " + packet.getAddress().getHostAddress() + ":" + packet.getPort() + "] " + message);
-//			if(message.equalsIgnoreCase("ping")) {
-//				sendData("pong".getBytes(), packet.getAddress(), packet.getPort());
-//			}
 		}
 	}
 	
 	public void parsePacket(byte[] data, InetAddress address, int port) {
 		String message = new String(data).trim();
-		PacketTypes type = Packet.getPacket(message.substring(0, 2));
+		PacketTypes type = Packet.getPacket(data[0]);
 		Packet packet = null;
 		switch (type) {
 		default:
 		case INVALID:
+			System.out.println(data[0]);
 			break;
 		case LOGIN:
 			packet = new Packet00Login(data);
@@ -163,8 +155,6 @@ public class ServerSocket extends Thread {
 			break;
 			//TODO upload image
 		case PIXELARRAY:
-			break;
-		case STARTUP:
 			break;
 		case SELECTCOLOR:
 			packet = new Packet04SelectColor(data);
@@ -258,24 +248,35 @@ public class ServerSocket extends Thread {
 	
 	//DONE send image correctly
 	private void sendImage(InetAddress address, int port, int imageId) {
-		int numPixels = paint.pixels.get(imageId).length;
-		int l = 254;
-		for(int num = 0; num <= numPixels/l; num++) {
+		int imagesize = paint.pixels.get(imageId).length;
+		int l = 64;
+		for(int pid = 0; pid < imagesize/l; pid++) {
 			int[] pack = new int[l];
-			if(numPixels - num*l <= l) {
-				pack = null;
-				pack = new int[numPixels - l*num];
+			if(imagesize - pid*l <= l) {
+				pack = new int[imagesize-pid*l];
 			}
-			for(int i = 0; i < pack.length; i++) {
-				pack[i] = paint.pixels.get(imageId)[num*l + i];
+			for(int i = 0; i < l; i++) {
+				pack[i] = paint.pixels.get(imageId)[pid*l+i];
 			}
-			Packet03PixelArray pixels = new Packet03PixelArray(num, imageId, pack);
-			sendData(pixels.getData(), address, port);
-//			for(int i = 0; i < pack.length; i++) {
-//				System.out.print(pack[i]+" ");
-//			}
-//			System.out.println();
+			Packet03PixelArray packet = new Packet03PixelArray(pid, imageId, pack);
+			sendData(packet.getData(), address, port);
 		}
+//		for(int num = 0; num <= numPixels/l; num++) {
+//			int[] pack = new int[l];
+//			if(numPixels - num*l <= l) {
+//				pack = null;
+//				pack = new int[numPixels - l*num];
+//			}
+//			for(int i = 0; i < pack.length; i++) {
+//				pack[i] = paint.pixels.get(imageId)[num*l + i];
+//			}
+//			Packet03PixelArray pixels = new Packet03PixelArray(num, imageId, pack);
+//			sendData(pixels.getData(), address, port);
+////			for(int i = 0; i < pack.length; i++) {
+////				System.out.print(pack[i]+" ");
+////			}
+////			System.out.println();
+//		}
 		commands.print("Image sent successfully to " + clients.get(Utils.getClientMPIndex(address, port, clients)).getUsername()+ "\n");
 	}
 //

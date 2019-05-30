@@ -1,5 +1,7 @@
 package com.camoga.paint.net.packets;
 
+import java.util.Arrays;
+
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -8,9 +10,9 @@ public class Packet00Login extends Packet {
 	private String username;
 	
 	public Packet00Login(byte[] data) {
-		super(00);
-		String[] dataArray = readData(data).split(",");
-		username = dataArray[0];
+		super(0);
+//		String[] dataArray = readData(data).split(",");
+		username = new String(Arrays.copyOfRange(data, 1, data.length)).trim();
 	}
 	
 	public Packet00Login(String username) {
@@ -27,7 +29,11 @@ public class Packet00Login extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("00" + username).getBytes();
+		byte[] user = username.getBytes();
+		byte[] data = new byte[1+user.length];
+		data[0] = 0;
+		System.arraycopy(user, 0, data, 1, user.length);
+		return data;
 	}
 	
 	public String getUsername() {

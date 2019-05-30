@@ -1,5 +1,8 @@
 package com.camoga.paint.net.packets;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -12,12 +15,13 @@ public class Packet13Cursor extends Packet {
 
 	public Packet13Cursor(byte[] data) {
 		super(13);
-		String[] dataArray = readData(data).split(",");
-		this.username = dataArray[0];
-		this.x = Integer.parseInt(dataArray[1]);
-		this.y = Integer.parseInt(dataArray[2]);
-		this.tool = Integer.parseInt(dataArray[3]);
-		this.imageid = Integer.parseInt(dataArray[4]);
+//		String[] dataArray = readData(data).split(",");
+//		this.username = dataArray[0];
+		this.x = ByteBuffer.wrap(data, 1, 2).getShort();
+		this.y = ByteBuffer.wrap(data, 3, 2).getShort();
+		this.tool = data[5] & 0xff;
+		this.imageid = data[6] & 0xff;
+		this.username = new String(Arrays.copyOfRange(data, 7, data.length)).trim();
 	}
 
 	public Packet13Cursor(String username, int x, int y, int tool, int imageid) {
@@ -38,7 +42,18 @@ public class Packet13Cursor extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("13" + this.username + "," + this.x + "," + this.y + "," + this.tool + "," + this.imageid).getBytes();
+		byte[] user = username.getBytes();
+		byte[] xc = ByteBuffer.allocate(2).putShort((short)x).array();
+		byte[] yc = ByteBuffer.allocate(2).putShort((short)y).array();
+		byte[] data = new byte[1+2+2+1+1+user.length];
+		data[0] = 13;
+		System.arraycopy(xc, 0, data, 1, 2);
+		System.arraycopy(yc, 0, data, 3, 2);
+		data[5] = (byte) tool;
+		data[6] = (byte) imageid;
+		System.arraycopy(user, 0, data, 7, user.length);
+		
+		return data;
 	}
 
 	public int getTool() {

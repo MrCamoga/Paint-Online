@@ -4,11 +4,12 @@ import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet12DeleteImage extends Packet {
+	
 	private int imageid;
 
 	public Packet12DeleteImage(byte[] data) {
 		super(12);
-		this.imageid = Integer.parseInt(readData(data));
+		this.imageid = data[1] & 0xff;
 	}
 
 	public Packet12DeleteImage(int imageid) {
@@ -25,7 +26,8 @@ public class Packet12DeleteImage extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("12" + this.imageid).getBytes();
+		byte[] data = {12, (byte)imageid};
+		return data;
 	}
 
 	public int getId() {

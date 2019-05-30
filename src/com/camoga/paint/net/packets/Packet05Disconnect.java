@@ -1,5 +1,7 @@
 package com.camoga.paint.net.packets;
 
+import java.util.Arrays;
+
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -9,8 +11,8 @@ public class Packet05Disconnect extends Packet {
 	
 	public Packet05Disconnect(byte[] data) {
 		super(05);
-		String[] dataArray = readData(data).split(",");
-		username = dataArray[0];
+//		String[] dataArray = readData(data).split(",");
+		username = new String(Arrays.copyOfRange(data, 1, data.length)).trim();
 	}
 	
 	public Packet05Disconnect(String username) {
@@ -27,7 +29,11 @@ public class Packet05Disconnect extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("05" + username).getBytes();
+		byte[] user = username.getBytes();
+		byte[] data = new byte[1+user.length];
+		data[0] = 5;
+		System.arraycopy(user, 0, data, 1, user.length);
+		return data;
 	}
 	
 	public String getUsername() {

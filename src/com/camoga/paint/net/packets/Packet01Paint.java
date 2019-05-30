@@ -1,5 +1,8 @@
 package com.camoga.paint.net.packets;
 
+import java.nio.ByteBuffer;
+import java.util.Arrays;
+
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -9,12 +12,12 @@ public class Packet01Paint extends Packet {
 	
 	public Packet01Paint(byte[] data) {
 		super(01);
-		String[] dataArray = readData(data).split(",");
-		x = Integer.parseInt(dataArray[0]);
-		y = Integer.parseInt(dataArray[1]);
-		size = Integer.parseInt(dataArray[2]);
-		color = Integer.parseInt(dataArray[3]);
-		id = Integer.parseInt(dataArray[4]);
+//		String[] dataArray = readData(data).split(",");
+		x = data[1] & 0xff;
+		y = data[2] & 0xff;
+		size = data[3] & 0xff;
+		color = ByteBuffer.wrap(data, 4, 4).getInt();
+		id = data[8] & 0xff;
 	}
 	
 	public Packet01Paint(int x, int y, int size, int color, int id) {
@@ -35,7 +38,14 @@ public class Packet01Paint extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("01"+x+","+y+","+size+","+color+","+id).getBytes();
+		byte[] data = new byte[1+1+1+1+4+1];
+		data[0] = 1;
+		data[1] = (byte) x;
+		data[2] = (byte) y;
+		data[3] = (byte) size;
+		System.arraycopy(ByteBuffer.allocate(4).putInt(color).array(), 0, data, 4, 4);
+		data[8] = (byte) id;
+		return data;
 	}
 	
 	public int getX() {

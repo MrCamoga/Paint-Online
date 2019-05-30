@@ -71,13 +71,12 @@ public class ClientSocket extends Thread {
 	}
 	
 	public void parsePacket(byte[] data, InetAddress address, int port) {
-		String message = new String(data).trim();
-		PacketTypes type = Packet.getPacket(message.substring(0, 2));
+		PacketTypes type = Packet.getPacket(data[0]);
 		Packet packet = null;
 		switch (type) {
 		default:
 		case INVALID:
-			System.out.println(new String(data).trim());
+//			System.out.println(new String(data).trim());
 			//throw new RuntimeException("You are not allowed to enter the server or an error has ocurred, if you think that this is an error please contact with mrcamoga@gmail.com");
 			break;
 		case LOGIN:
@@ -88,11 +87,6 @@ public class ClientSocket extends Thread {
 		case PAINT:
 			packet = new Packet01Paint(data);
 			handlePaint((Packet01Paint) packet);
-			break;
-		case STARTUP: //DELETE?
-//			packet = new Packet02Startup(data);
-//			main.paint.init(((Packet02Startup) packet).getWidth(), ((Packet02Startup) packet).getHeight(), ((Packet02Startup) packet).getScale(), ((Packet02Startup) packet).getImage());
-//			main.paint.start();
 			break;
 		case PIXELARRAY:
 			packet = new Packet03PixelArray(data);
