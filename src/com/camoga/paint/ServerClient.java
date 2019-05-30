@@ -19,7 +19,7 @@ import com.camoga.paint.net.packets.Packet01Paint;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 import com.camoga.paint.net.packets.Packet07FillBucket;
 
-//FIXME if client connected to same server from to tabs, he'll draw from the two servers simultaneously
+//FIXME if client connected to same server from two tabs, he'll draw from the two tabs simultaneously
 public class ServerClient extends JPanel implements Runnable {
 	public static enum Tool {
 		PENCIL(0), BUCKET(1), RUBBER(2), PICKCOLOR(3), BRUSH(4), RECTSEL(5), ELIPSEL(6), COLORSEL(7);
@@ -116,7 +116,7 @@ public class ServerClient extends JPanel implements Runnable {
 					if (target == color)
 						return;
 					System.out.println("fillbucket");
-					Packet07FillBucket bucketPacket = new Packet07FillBucket(xs, ys, target, color, getImageID());
+					Packet07FillBucket bucketPacket = new Packet07FillBucket(xs, ys, color, getImageID());
 					bucketPacket.writeData(socketClient);
 					floodFill(xs, ys, target, color, getImageID());
 					break;
@@ -198,6 +198,7 @@ public class ServerClient extends JPanel implements Runnable {
 	ArrayList<Point> queue = new ArrayList();
 
 	// TODO change floodFill algorithm
+	
 	public void floodFill(int x, int y, int targetColor, int color, int imageid) {
 		int WIDTH = image.get(imageid).width;
 		int HEIGHT = image.get(imageid).height;

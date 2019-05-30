@@ -1,27 +1,28 @@
 package com.camoga.paint.net.packets;
 
+import java.nio.ByteBuffer;
+
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet07FillBucket extends Packet {
 
-	private int x, y, target, color, id;
+	//TODO target inecesario / fusionar con paint (tool)
+	private int x, y, color, id;
 
 	public Packet07FillBucket(byte[] data) {
 		super(07);
-		String[] dataArray = readData(data).split(",");
-		x = Integer.parseInt(dataArray[0]);
-		y = Integer.parseInt(dataArray[1]);
-		target = Integer.parseInt(dataArray[2]);
-		color = Integer.parseInt(dataArray[3]);
-		id = Integer.parseInt(dataArray[4]);
+		Serialize s = Serialize.wrap(data, 1, data.length-1);
+		x = s.get();
+		y = s.get();
+		color = s.getInt();
+		id = s.get();
 	}
 
-	public Packet07FillBucket(int x, int y, int target, int color, int id) {
+	public Packet07FillBucket(int x, int y, int color, int id) {
 		super(07);
 		this.x = x;
 		this.y = y;
-		this.target = target;
 		this.color = color;
 		this.id = id;
 	}
@@ -35,7 +36,7 @@ public class Packet07FillBucket extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("07"+x+","+y+","+target+","+color+","+id).getBytes();
+		return Serialize.allocate(8).put(7).put(x).put(y).putInt(color).put(id).array();
 	}
 	
 	public int getX() {
@@ -44,10 +45,6 @@ public class Packet07FillBucket extends Packet {
 	
 	public int getY() {
 		return y;
-	}
-	
-	public int getTarget() {
-		return target;
 	}
 	
 	public int getColor() {

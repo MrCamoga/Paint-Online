@@ -1,5 +1,7 @@
 package com.camoga.paint.net.packets;
 
+import java.util.Arrays;
+
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -10,9 +12,10 @@ public class Packet06Chat extends Packet {
 	
 	public Packet06Chat(byte[] data) {
 		super(06);
-		String dataString = readData(data);
-		username = dataString.split(",")[0];
-		message = dataString.substring(username.length()+1);
+		Serialize s = Serialize.wrap(data, 1, data.length-1);
+		
+		username = s.getString(true);
+		message = s.getString(false);
 	}
 	
 	public Packet06Chat(String username, String message) {
@@ -30,7 +33,7 @@ public class Packet06Chat extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("06"+username+","+message).getBytes();
+		return Serialize.allocate(1+1+username.length()+message.length()).put(6).putString(username, true).putString(message, false).array();
 	}
 	
 	public String getMessage() {

@@ -15,13 +15,12 @@ public class Packet13Cursor extends Packet {
 
 	public Packet13Cursor(byte[] data) {
 		super(13);
-//		String[] dataArray = readData(data).split(",");
-//		this.username = dataArray[0];
-		this.x = ByteBuffer.wrap(data, 1, 2).getShort();
-		this.y = ByteBuffer.wrap(data, 3, 2).getShort();
-		this.tool = data[5] & 0xff;
-		this.imageid = data[6] & 0xff;
-		this.username = new String(Arrays.copyOfRange(data, 7, data.length)).trim();
+		Serialize s = Serialize.wrap(data, 1, data.length-1);
+		this.x = s.getShort();
+		this.y = s.getShort();
+		this.tool = s.get();
+		this.imageid = s.get();
+		this.username = s.getString(true);
 	}
 
 	public Packet13Cursor(String username, int x, int y, int tool, int imageid) {
@@ -42,18 +41,13 @@ public class Packet13Cursor extends Packet {
 	}
 
 	public byte[] getData() {
-		byte[] user = username.getBytes();
-		byte[] xc = ByteBuffer.allocate(2).putShort((short)x).array();
-		byte[] yc = ByteBuffer.allocate(2).putShort((short)y).array();
-		byte[] data = new byte[1+2+2+1+1+user.length];
-		data[0] = 13;
-		System.arraycopy(xc, 0, data, 1, 2);
-		System.arraycopy(yc, 0, data, 3, 2);
-		data[5] = (byte) tool;
-		data[6] = (byte) imageid;
-		System.arraycopy(user, 0, data, 7, user.length);
-		
-		return data;
+		return Serialize.allocate(1+2+2+1+1+1+username.length())
+				.put((byte)13)
+				.putShort((short)x)
+				.putShort((short)y)
+				.put((byte)tool)
+				.put((byte)imageid)
+				.putString(username, true).array();
 	}
 
 	public int getTool() {

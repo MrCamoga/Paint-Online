@@ -13,9 +13,10 @@ public class Packet08NewImage extends Packet {
 	
 	public Packet08NewImage(byte[] data) {
 		super(8);
-		width = data[1] & 0xff;
-		height = data[2] & 0xff;
-		imageid = data[3] & 0xff;
+		Serialize s = Serialize.wrap(data, 1, data.length-1);
+		width = s.get();
+		height = s.get();
+		imageid = s.get();
 	}
 	
 	public Packet08NewImage(int width, int height, int id) {
@@ -34,13 +35,7 @@ public class Packet08NewImage extends Packet {
 	}
 
 	public byte[] getData() {
-		byte[] data = new byte[1+1+1+1];
-		data[0] = 8;
-		data[1] = (byte) width;
-		data[2] = (byte) height;
-		data[3] = (byte) imageid;
-		
-		return data;
+		return Serialize.allocate(4).put(8).put(width).put(height).put(imageid).array();
 	}
 	
 	public int getWidth() {

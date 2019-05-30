@@ -11,8 +11,7 @@ public class Packet00Login extends Packet {
 	
 	public Packet00Login(byte[] data) {
 		super(0);
-//		String[] dataArray = readData(data).split(",");
-		username = new String(Arrays.copyOfRange(data, 1, data.length)).trim();
+		username = Serialize.wrap(data, 1, data.length-1).getString(false);
 	}
 	
 	public Packet00Login(String username) {
@@ -29,11 +28,7 @@ public class Packet00Login extends Packet {
 	}
 
 	public byte[] getData() {
-		byte[] user = username.getBytes();
-		byte[] data = new byte[1+user.length];
-		data[0] = 0;
-		System.arraycopy(user, 0, data, 1, user.length);
-		return data;
+		return Serialize.allocate(1+username.length()).put(0).putString(username, false).array();
 	}
 	
 	public String getUsername() {

@@ -1,7 +1,5 @@
 package com.camoga.paint.net.packets;
 
-import java.nio.ByteBuffer;
-
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -11,7 +9,7 @@ public class Packet04SelectColor extends Packet {
 	
 	public Packet04SelectColor(byte[] data) {
 		super(04);
-		color = ByteBuffer.wrap(data, 1, 4).getInt();
+		color = Serialize.wrap(data, 1, data.length-1).getInt();
 	}
 	
 	public Packet04SelectColor(int color) {
@@ -28,10 +26,7 @@ public class Packet04SelectColor extends Packet {
 	}
 
 	public byte[] getData() {
-		byte[] data = new byte[5];
-		data[0] = 4;
-		System.arraycopy(ByteBuffer.allocate(4).putInt(color).array(), 0, data, 1, 4);
-		return data;
+		return Serialize.allocate(5).put(4).putInt(color).array();
 	}
 	
 	public int getColor() {

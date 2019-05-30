@@ -170,7 +170,6 @@ public class ClientSocket extends Thread {
 		paint.removeClient(packet.getUsername());
 	}
 	
-	//TODO change to int serialization
 	public void handlePixelArray(Packet03PixelArray packet) {
 		paint.imagepacket(packet.getPixels(), packet.getNum(), packet.getImageId());
 	}
@@ -179,8 +178,8 @@ public class ClientSocket extends Thread {
 		paint.pencil(packet.getX(), packet.getY(), packet.getSize(), packet.getColor(), packet.getImage());
 	}
 	
-	public void handleFillBucket(Packet07FillBucket packet) {
-		paint.floodFill(packet.getX(), packet.getY(), packet.getTarget(), packet.getColor(), packet.getImage());
+	public void handleFillBucket(Packet07FillBucket packet) { // TODO feo
+		paint.floodFill(packet.getX(), packet.getY(), paint.image.get(packet.getImage()).getPixel(packet.getX(), packet.getY()), packet.getColor(), packet.getImage());
 	}
 	
 	public void handleChat(Packet06Chat packet) {

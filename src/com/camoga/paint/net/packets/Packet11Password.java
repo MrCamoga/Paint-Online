@@ -12,8 +12,9 @@ public class Packet11Password extends Packet {
 	
 	public Packet11Password(byte[] data) {
 		super(11);
-		correct = data[1] == 1;
-		password = new String(Arrays.copyOfRange(data, 2, data.length)).trim();
+		Serialize s = Serialize.wrap(data, 1, data.length-1);
+		correct = s.getBoolean();
+		password = s.getString(true);
 	}
 	
 	public Packet11Password(String password, boolean correct) {
@@ -31,12 +32,7 @@ public class Packet11Password extends Packet {
 	}
 
 	public byte[] getData() {
-		byte[] pass = password.getBytes();
-		byte[] data = new byte[1+1+pass.length];
-		data[0] = 11;
-		data[1] = (byte) (correct ? 1:0);
-		System.arraycopy(pass, 0, data, 2, pass.length);
-		return data;
+		return Serialize.allocate(3+password.length()).put(11).putBoolean(correct).putString(password, true).array();
 	}
 	
 	public String getPassword() {

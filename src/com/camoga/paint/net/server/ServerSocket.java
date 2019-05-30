@@ -120,7 +120,6 @@ public class ServerSocket extends Thread {
 	}
 	
 	public void parsePacket(byte[] data, InetAddress address, int port) {
-		String message = new String(data).trim();
 		PacketTypes type = Packet.getPacket(data[0]);
 		Packet packet = null;
 		switch (type) {
@@ -174,11 +173,10 @@ public class ServerSocket extends Thread {
 			break;
 		case FILLBUCKET:
 			packet = new Packet07FillBucket(data);
-			paint.floodFill(((Packet07FillBucket) packet).getX(), 
-					((Packet07FillBucket) packet).getY(), 
-					((Packet07FillBucket) packet).getTarget(), 
-					((Packet07FillBucket) packet).getColor(),
-					((Packet07FillBucket) packet).getImage());
+			int x = ((Packet07FillBucket) packet).getX();
+			int y = ((Packet07FillBucket) packet).getY();
+			int imageid = ((Packet07FillBucket) packet).getImage();
+			paint.floodFill(x, y, paint.pixels.get(imageid)[x+y*paint.size.get(imageid)[0]], ((Packet07FillBucket) packet).getColor(), imageid);
 			packet.writeData(this);
 			break;
 			//DONE image width and height

@@ -9,7 +9,7 @@ public class Packet12DeleteImage extends Packet {
 
 	public Packet12DeleteImage(byte[] data) {
 		super(12);
-		this.imageid = data[1] & 0xff;
+		this.imageid = Serialize.wrap(data, 1, data.length-1).get();
 	}
 
 	public Packet12DeleteImage(int imageid) {
@@ -26,8 +26,7 @@ public class Packet12DeleteImage extends Packet {
 	}
 
 	public byte[] getData() {
-		byte[] data = {12, (byte)imageid};
-		return data;
+		return new byte[]{12, (byte)imageid};
 	}
 
 	public int getId() {

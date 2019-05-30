@@ -11,7 +11,7 @@ public class Packet10Version extends Packet {
 	
 	public Packet10Version(byte[] data) {
 		super(10);
-		version = new String(Arrays.copyOfRange(data, 1, data.length)).trim();
+		version = Serialize.wrap(data, 1, data.length-1).getString(true);
 	}
 	
 	public Packet10Version(String version) {
@@ -28,12 +28,7 @@ public class Packet10Version extends Packet {
 	}
 
 	public byte[] getData() {
-		byte[] v = version.getBytes();
-		byte[] data = new byte[1+v.length];
-		data[0] = 10;
-		System.arraycopy(v, 0, data, 1, v.length);
-		
-		return data;
+		return Serialize.allocate(1+version.length()).put(10).putString(version, true).array();
 	}
 	
 	public String getVersion() {

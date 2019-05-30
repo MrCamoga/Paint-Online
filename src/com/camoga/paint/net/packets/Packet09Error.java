@@ -11,11 +11,9 @@ public class Packet09Error extends Packet {
 	
 	public Packet09Error(byte[] data) {
 		super(9);
-//		String[] dataArray = readData(data).split(",");
-		int[] i = new int[2];
-		ByteBuffer.wrap(data, 1, 8).asIntBuffer().get(i);
-		type = i[0];
-		a = i[1];
+		Serialize s = Serialize.wrap(data, 1, data.length-1);
+		type = s.getInt();
+		a = s.getInt();
 	}
 	
 	/**
@@ -37,15 +35,8 @@ public class Packet09Error extends Packet {
 		server.sendDataToAllClients(getData());
 	}
 
-	//TODO getData
 	public byte[] getData() {
-		byte[] data = new byte[9];
-		data[0] = 9;
-		ByteBuffer bb = ByteBuffer.allocate(8);
-		bb.putInt(type);
-		bb.putInt(a);
-		System.arraycopy(bb.array(), 0, data, 1, 8);
-		return data;
+		return Serialize.allocate(9).put(9).putInt(type).putInt(a).array();
 	}
 	
 	public int getType() {

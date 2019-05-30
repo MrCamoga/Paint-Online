@@ -18,6 +18,10 @@ public class Image {
 	public int[] getPixels() {
 		return this.pixels;
 	}
+	
+	public int getPixel(int x, int y) {
+		return pixels[x + y * width];
+	}
 
 	public BufferedImage getBufferedImage() {
 		return this.image;
