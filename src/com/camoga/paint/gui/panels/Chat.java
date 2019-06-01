@@ -31,11 +31,14 @@ public class Chat extends JPanel {
 		chatBox.setEditable(false);
 		chatType = new JTextField(50);
 		chatType.addActionListener(new ActionListener() {
-			//FIXME do not send empty text
 			public void actionPerformed(ActionEvent e) {
 				if ((chatType.getText().equals("")) || (command())) {
 					chatType.setText("");
 					return;
+				}
+				if(chatType.getText().startsWith("/msg " + ServerManager.currentsc.socketClient.client.getUsername())) {
+					chatType.setText("");
+					addText("Cannot send pm to yourself");
 				}
 				Packet06Chat sendMessage = new Packet06Chat(ServerManager.currentsc.socketClient.client.getUsername(),
 						chatType.getText());

@@ -142,7 +142,7 @@ public class ClientSocket extends Thread {
 		case DELETEIMAGE:
 			packet = new Packet12DeleteImage(data);
 			int i = JOptionPane.showConfirmDialog(paint, "An user has deleted an image, Would you like to save it? If you don't, you won't be able to recover it", "Image deleted", JOptionPane.ERROR_MESSAGE);
-			if (i == 0) {
+			if (i == JOptionPane.OK_OPTION) {
 				Utils.saveImage(((Packet12DeleteImage)packet).getId());
 			}
 			paint.removeImage(((Packet12DeleteImage)packet).getId());
@@ -178,8 +178,13 @@ public class ClientSocket extends Thread {
 		paint.pencil(packet.getX(), packet.getY(), packet.getSize(), packet.getColor(), packet.getImage());
 	}
 	
-	public void handleFillBucket(Packet07FillBucket packet) { // TODO feo
-		paint.floodFill(packet.getX(), packet.getY(), paint.image.get(packet.getImage()).getPixel(packet.getX(), packet.getY()), packet.getColor(), packet.getImage());
+	public void handleFillBucket(Packet07FillBucket packet) {
+		int x = packet.getX();
+		int y = packet.getY();
+		int imageid = packet.getImage();
+		int target = paint.image.get(imageid).getPixel(x,y);
+		int color = packet.getColor();
+		paint.floodFill(x, y, target, color, imageid);
 	}
 	
 	public void handleChat(Packet06Chat packet) {

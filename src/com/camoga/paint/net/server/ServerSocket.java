@@ -34,7 +34,7 @@ import com.camoga.paint.net.packets.Packet13Cursor;
 
 public class ServerSocket extends Thread {
 	
-	private String version = "1.1.5";
+	private String version = "1.1.7";
 	
 	private static final int PORT = 7357;
 	
@@ -114,7 +114,6 @@ public class ServerSocket extends Thread {
 			} catch(IOException e) {
 				e.printStackTrace();
 			}
-			System.out.println(new String(packet.getData()).trim());
 			parsePacket(packet.getData(), packet.getAddress(), packet.getPort());
 		}
 	}
@@ -193,9 +192,10 @@ public class ServerSocket extends Thread {
 			break;
 		case PASSWORD:
 			packet = new Packet11Password(data);
-			Packet11Password password = new Packet11Password("", ((Packet11Password) packet).getPassword().equals(getPassword()));
-			System.out.println("Password " + (password.isCorrect() ? "correct":"incorrect"));
-			sendData(password.getData(), address, port);
+			boolean correct = ((Packet11Password) packet).getPassword().equals(getPassword());
+			System.out.println("Password " + (correct ? "correct":"incorrect"));
+			packet = new Packet11Password("", correct);
+			sendData(packet.getData(), address, port);
 			break;
 		case DELETEIMAGE:
 			packet = new Packet12DeleteImage(data);
@@ -214,6 +214,7 @@ public class ServerSocket extends Thread {
 			packet = new Packet13Cursor(data);
 			packet.writeData(this);
 		}
+		System.out.println(packet);
 	}
 	
 	private boolean handleChat(Packet06Chat packet, InetAddress address, int port) {
@@ -221,7 +222,7 @@ public class ServerSocket extends Thread {
 		String[] msg = packet.getMessage().split(" ");
 		switch(msg[0]) {
 		case "/msg":
-			//FIXME if user sends message to himself it will receive two messages
+			//DONE if user sends message to himself it will receive two messages
 			int clientIndex = Utils.getClientMPIndex(msg[1],clients);
 			if(clientIndex != -1) {
 				Packet06Chat sendMessage = new Packet06Chat(packet.getUsername(), "PM: " + packet.getMessage().substring(6+msg[1].length()));
@@ -247,34 +248,20 @@ public class ServerSocket extends Thread {
 	//DONE send image correctly
 	private void sendImage(InetAddress address, int port, int imageId) {
 		int imagesize = paint.pixels.get(imageId).length;
-		int l = 64;
-		for(int pid = 0; pid < imagesize/l; pid++) {
+		int l = Packet03PixelArray.packetsize;
+		for(int pid = 0; pid < Math.ceil(imagesize/(double)l); pid++) {
 			int[] pack = new int[l];
 			if(imagesize - pid*l <= l) {
 				pack = new int[imagesize-pid*l];
+				System.out.println(pack.length);
 			}
-			for(int i = 0; i < l; i++) {
+			for(int i = 0; i < pack.length; i++) {
 				pack[i] = paint.pixels.get(imageId)[pid*l+i];
 			}
 			Packet03PixelArray packet = new Packet03PixelArray(pid, imageId, pack);
 			sendData(packet.getData(), address, port);
 		}
-//		for(int num = 0; num <= numPixels/l; num++) {
-//			int[] pack = new int[l];
-//			if(numPixels - num*l <= l) {
-//				pack = null;
-//				pack = new int[numPixels - l*num];
-//			}
-//			for(int i = 0; i < pack.length; i++) {
-//				pack[i] = paint.pixels.get(imageId)[num*l + i];
-//			}
-//			Packet03PixelArray pixels = new Packet03PixelArray(num, imageId, pack);
-//			sendData(pixels.getData(), address, port);
-////			for(int i = 0; i < pack.length; i++) {
-////				System.out.print(pack[i]+" ");
-////			}
-////			System.out.println();
-//		}
+
 		commands.print("Image sent successfully to " + clients.get(Utils.getClientMPIndex(address, port, clients)).getUsername()+ "\n");
 	}
 //

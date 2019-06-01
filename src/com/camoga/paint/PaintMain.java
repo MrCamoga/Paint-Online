@@ -19,13 +19,14 @@ import com.camoga.paint.net.packets.Packet11Password;
 
 public class PaintMain extends Thread {
 	
-	public String version = "1.1.5";
+	public String version = "1.1.7";
 	
 	public Window window;
 	public static PaintMain main;
 	
 	public static void main(String[] args) throws HeadlessException, UnknownHostException {
-		new PaintMain("localhost", "null", "MrCamoga" + new Random().nextInt(1000)).start();
+		new PaintMain("213.77.183.253", "null", "MrCamoga" + new Random().nextInt(1000));
+//		new PaintMain().start();
 	}
 	
 	public PaintMain() {

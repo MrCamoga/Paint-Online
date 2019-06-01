@@ -31,6 +31,10 @@ public class Packet00Login extends Packet {
 		return Serialize.allocate(1+username.length()).put(0).putString(username, false).array();
 	}
 	
+	public String toString() {
+		return super.toString() + ": " + getUsername();
+	}
+	
 	public String getUsername() {
 		return username;
 	}

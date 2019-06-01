@@ -13,9 +13,9 @@ public class Utils {
 	public static void saveImage(int id) {
 		try {
 			JFileChooser filechooser = new JFileChooser();
-			filechooser.showOpenDialog(Window.window);
-			ImageIO.write((ServerManager.currentsc.image.get(id)).getBufferedImage(), "PNG",
-					filechooser.getSelectedFile());
+			int i = filechooser.showOpenDialog(Window.window);
+			if(i == JFileChooser.APPROVE_OPTION)
+			ImageIO.write((ServerManager.currentsc.image.get(id)).getBufferedImage(), "PNG", filechooser.getSelectedFile());
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

@@ -7,7 +7,7 @@ import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet07FillBucket extends Packet {
 
-	//TODO target inecesario / fusionar con paint (tool)
+	//TODO fusionar con paint (tool)
 	private int x, y, color, id;
 
 	public Packet07FillBucket(byte[] data) {

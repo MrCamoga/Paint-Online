@@ -1,7 +1,5 @@
 package com.camoga.paint.net.packets;
 
-import java.util.Arrays;
-
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -33,6 +31,10 @@ public class Packet11Password extends Packet {
 
 	public byte[] getData() {
 		return Serialize.allocate(3+password.length()).put(11).putBoolean(correct).putString(password, true).array();
+	}
+	
+	public String toString() {
+		return super.toString() + ": " + isCorrect();
 	}
 	
 	public String getPassword() {

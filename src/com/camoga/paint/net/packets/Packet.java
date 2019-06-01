@@ -35,6 +35,10 @@ public abstract class Packet {
 	
 	public abstract byte[] getData();
 	
+	public String toString() {
+		return getClass().getSimpleName();
+	};
+	
 	public String reaData(byte[] data) {
 		String message = new String(data).trim();
 		return message.substring(2);

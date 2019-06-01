@@ -1,0 +1,4 @@
+Scan LAN for servers
+help.xml commands
+Upload images
+Change imageid from index to UUID

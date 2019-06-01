@@ -35,7 +35,7 @@ public class Cursor extends JButton {
 			this.y = y;
 			this.path = path;
 			try {
-				cursorImage = ImageIO.read(new FileInputStream("res/cursors/"+path));
+				cursorImage = ImageIO.read(Cursor.class.getResourceAsStream("/cursors/"+path));
 			} catch (Exception e) {
 				e.printStackTrace();
 			}

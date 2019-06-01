@@ -70,8 +70,8 @@ public class Serialize {
 		return put(b);
 	}
 	
-	public Serialize putShort(short data) {
-		bb.putShort(data);
+	public Serialize putShort(int data) {
+		bb.putShort((short)data);
 		return this;
 	}
 	

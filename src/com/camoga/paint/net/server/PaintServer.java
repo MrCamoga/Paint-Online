@@ -44,33 +44,75 @@ public class PaintServer {
 	
 	ArrayList<Point> queue = new ArrayList<>();
 	public void floodFill(int x, int y, int targetColor, int color, int imageid) {
-		int WIDTH = this.size.get(imageid)[0];
-		int HEIGHT = this.size.get(imageid)[1];
+		int WIDTH = size.get(imageid)[0];
+		int HEIGHT = size.get(imageid)[0];
 		if(queue.size()>0) queue.remove(0);
-		while(y > 0 && pixels.get(imageid)[x + (y-1)*WIDTH] == targetColor) {
+		while(y > 0 && getPixel(x, y-1, imageid) == targetColor) {
 			y--;
 		}
-		while(y < HEIGHT && pixels.get(imageid)[x + (y)*WIDTH] == targetColor) {
-			pixels.get(imageid)[x + y * WIDTH] = color;
-			if(pixels.get(imageid)[x-1 + y*WIDTH] == targetColor) {
+		boolean left = false, right = false;
+		while(y < HEIGHT && getPixel(x, y, imageid) == targetColor) {
+			setPixel(x,y, color, imageid);
+			
+			if(!left && x > 0 && getPixel(x-1, y, imageid) == targetColor) {
 				int ytemp = y;
-				while(pixels.get(imageid)[(x-1) + (ytemp-1)*WIDTH] == targetColor) {
+				while(ytemp > 0 && getPixel(x-1, ytemp-1, imageid) == targetColor) {
 					ytemp--;
 				}
-				queue.add(new Point(x-1, ytemp));				
-			}
-			if(pixels.get(imageid)[x+1 + y*WIDTH] == targetColor) {
+				queue.add(new Point(x-1, ytemp));
+				left = true;
+			} else if(left && x > 0 && getPixel(x-1, y, imageid) != targetColor) left = false;
+			if(!right && x < WIDTH - 1 && getPixel(x+1, y, imageid) == targetColor) {
 				int ytemp = y;
-				while(pixels.get(imageid)[(x+1) + (ytemp-1)*WIDTH] == targetColor) {
+				while(ytemp > 0 && getPixel(x+1, ytemp-1, imageid) == targetColor) {
 					ytemp--;
 				}
-				queue.add(new Point(x+1, ytemp));				
-			}
+				queue.add(new Point(x+1, ytemp));
+				right = true;
+			} else if(right && x < WIDTH - 1 && getPixel(x+1, y, imageid) != targetColor) right = false;
+			
+			
 			y++;
 		}
-		
 		if(queue.size()>0)
 		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, imageid);
+	}
+//	public void floodFill(int x, int y, int targetColor, int color, int imageid) {
+//		int WIDTH = this.size.get(imageid)[0];
+//		int HEIGHT = this.size.get(imageid)[1];
+//		if(queue.size()>0) queue.remove(0);
+//		while(y > 0 && pixels.get(imageid)[x + (y-1)*WIDTH] == targetColor) {
+//			y--;
+//		}
+//		while(y < HEIGHT && pixels.get(imageid)[x + (y)*WIDTH] == targetColor) {
+//			pixels.get(imageid)[x + y * WIDTH] = color;
+//			if(pixels.get(imageid)[x-1 + y*WIDTH] == targetColor) {
+//				int ytemp = y;
+//				while(pixels.get(imageid)[(x-1) + (ytemp-1)*WIDTH] == targetColor) {
+//					ytemp--;
+//				}
+//				queue.add(new Point(x-1, ytemp));				
+//			}
+//			if(pixels.get(imageid)[x+1 + y*WIDTH] == targetColor) {
+//				int ytemp = y;
+//				while(pixels.get(imageid)[(x+1) + (ytemp-1)*WIDTH] == targetColor) {
+//					ytemp--;
+//				}
+//				queue.add(new Point(x+1, ytemp));				
+//			}
+//			y++;
+//		}
+//		
+//		if(queue.size()>0)
+//		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, imageid);
+//	}
+	
+	private int getPixel(int x, int y, int imageid) {
+		return pixels.get(imageid)[x+y*size.get(imageid)[0]];
+	}
+	
+	private void setPixel(int x, int y, int color, int imageid) {
+		pixels.get(imageid)[x+y*size.get(imageid)[0]] = color;
 	}
 
 	public void init(int imageid) {

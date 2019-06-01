@@ -33,7 +33,11 @@ public class Packet06Chat extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(1+1+username.length()+message.length()).put(6).putString(username, true).putString(message, false).array();
+		return Serialize.allocate(1+1+username.getBytes().length+message.getBytes().length).put(6).putString(username, true).putString(message, false).array();
+	}
+	
+	public String toString() {
+		return super.toString() + ": " + getUsername() + ": " + getMessage();
 	}
 	
 	public String getMessage() {

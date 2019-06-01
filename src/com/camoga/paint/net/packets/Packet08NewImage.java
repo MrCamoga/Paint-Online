@@ -14,8 +14,8 @@ public class Packet08NewImage extends Packet {
 	public Packet08NewImage(byte[] data) {
 		super(8);
 		Serialize s = Serialize.wrap(data, 1, data.length-1);
-		width = s.get();
-		height = s.get();
+		width = s.getShort();
+		height = s.getShort();
 		imageid = s.get();
 	}
 	
@@ -35,7 +35,11 @@ public class Packet08NewImage extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(4).put(8).put(width).put(height).put(imageid).array();
+		return Serialize.allocate(6).put(8).putShort(width).putShort(height).put(imageid).array();
+	}
+	
+	public String toString() {
+		return super.toString() + ": " + getWidth() + "x" + getHeight();
 	}
 	
 	public int getWidth() {

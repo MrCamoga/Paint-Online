@@ -16,6 +16,7 @@ import com.camoga.paint.gui.panels.Chat;
 import com.camoga.paint.gui.panels.PaintPanel;
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.packets.Packet01Paint;
+import com.camoga.paint.net.packets.Packet03PixelArray;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 import com.camoga.paint.net.packets.Packet07FillBucket;
 
@@ -60,6 +61,7 @@ public class ServerClient extends JPanel implements Runnable {
 
 	public void init(int width, int height, int imageid) {
 		PaintPanel pp = new PaintPanel(this);
+		System.out.println(width + ", " + height);
 		Image img = new Image(width, height);
 		pp.scale = (512 / height);
 		image.add(img);
@@ -202,44 +204,46 @@ public class ServerClient extends JPanel implements Runnable {
 	public void floodFill(int x, int y, int targetColor, int color, int imageid) {
 		int WIDTH = image.get(imageid).width;
 		int HEIGHT = image.get(imageid).height;
-		if (queue.size() > 0)
-			queue.remove(0);
-		do {
+		if(queue.size()>0) queue.remove(0);
+		while(y > 0 && image.get(imageid).getPixel(x, y-1) == targetColor) {
 			y--;
-			if (y <= 0)
-				break;
-		} while (image.get(imageid).getPixels()[(x + (y - 1) * WIDTH)] == targetColor);
-
-		while ((y < HEIGHT) && (image.get(imageid).getPixels()[(x + y * WIDTH)] == targetColor)) {
-			System.out.println("x" + x + ", y: " + y);
-			image.get(imageid).getPixels()[(x + y * WIDTH)] = color;
-			if ((x > 0) && (image.get(imageid).getPixels()[(x - 1 + y * WIDTH)] == targetColor)) {
+		}
+		boolean left = false, right = false;
+		while(y < HEIGHT && image.get(imageid).getPixel(x, y) == targetColor) {
+			image.get(imageid).setPixel(x,y, color);
+			
+			if(!left && x > 0 && image.get(imageid).getPixel(x-1, y) == targetColor) {
 				int ytemp = y;
-				while ((ytemp > 0) && (x - 1 >= 0) && (image.get(imageid))
-						.getPixels()[(x - 1 + (ytemp - 1) * WIDTH)] == targetColor) {
+				while(ytemp > 0 && image.get(imageid).getPixel(x-1, ytemp-1) == targetColor) {
 					ytemp--;
 				}
-				queue.add(new Point(x - 1, ytemp));
-			}
-			if ((x < getBufferedImage().getWidth() - 1)
-					&& (image.get(imageid).getPixels()[(x + 1 + y * WIDTH)] == targetColor)) {
+				queue.add(new Point(x-1, ytemp));
+				left = true;
+			} else if(left && x > 0 && image.get(imageid).getPixel(x-1, y) != targetColor) left = false;
+			if(!right && x < WIDTH - 1 && image.get(imageid).getPixel(x+1,y) == targetColor) {
 				int ytemp = y;
-				while ((ytemp > 0) && (image.get(imageid))
-						.getPixels()[(x + 1 + (ytemp - 1) * WIDTH)] == targetColor) {
+				while(ytemp > 0 && image.get(imageid).getPixel(x+1, ytemp-1) == targetColor) {
 					ytemp--;
 				}
-				queue.add(new Point(x + 1, ytemp));
+				queue.add(new Point(x+1, ytemp));
+				right = true;
+			} else if(right && x < WIDTH - 1 && image.get(imageid).getPixel(x+1, y) != targetColor) {
+				System.out.println(right);
+				right = false;
 			}
+			
+			
 			y++;
 		}
-		if (queue.size() > 0)
-			floodFill(((Point) queue.get(0)).x, ((Point) queue.get(0)).y, targetColor, color, imageid);
+		System.out.println(x + ", " + y);
+		if(queue.size()>0)
+		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, imageid);
 	}
 
 	public void imagepacket(int[] pixels, int num, int imageid) {
 //		System.out.println(num);
 		for (int i = 0; i < pixels.length; i++) {
-			image.get(imageid).getPixels()[(num * 64 + i)] = pixels[i];
+			image.get(imageid).getPixels()[(num * Packet03PixelArray.packetsize + i)] = pixels[i];
 		}
 	}
 

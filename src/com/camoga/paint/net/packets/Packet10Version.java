@@ -28,7 +28,11 @@ public class Packet10Version extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(1+version.length()).put(10).putString(version, true).array();
+		return Serialize.allocate(1+1+version.length()).put(10).putString(version, true).array();
+	}
+	
+	public String toString() {
+		return super.toString() + ": " + getVersion();
 	}
 	
 	public String getVersion() {

@@ -9,6 +9,8 @@ import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet03PixelArray extends Packet {
 
+	public static final int packetsize = 254;
+	
 	private int[] pixels;
 	private int num, imageid;
 	
@@ -16,9 +18,9 @@ public class Packet03PixelArray extends Packet {
 	public Packet03PixelArray(byte[] data) {
 		super(3);
 		Serialize s = Serialize.wrap(data, 1, data.length-1);
-		num = s.get();
+		num = s.getShort();
 		imageid = s.get();
-		pixels = s.getInt(64);
+		pixels = s.getInt(s.get());
 	}
 	
 	public Packet03PixelArray(int num, int id, int[] pixels) {
@@ -37,7 +39,7 @@ public class Packet03PixelArray extends Packet {
 	}
 	
 	public byte[] getData() {
-		return Serialize.allocate(3+pixels.length*4).put(3).put(num).put(imageid).putInt(pixels).array();
+		return Serialize.allocate(5+pixels.length*4).put(3).putShort(num).put(imageid).put(pixels.length).putInt(pixels).array();
 	}
 	
 	public int[] getPixels() {

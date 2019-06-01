@@ -1,6 +1,7 @@
 package com.camoga.paint;
 
 import java.awt.image.BufferedImage;
+import java.awt.image.DataBufferInt;
 
 public class Image {
 	private BufferedImage image;
@@ -9,8 +10,8 @@ public class Image {
 	public int height;
 
 	public Image(int width, int height) {
-		this.image = new BufferedImage(width, height, 2);
-		this.pixels = ((java.awt.image.DataBufferInt) this.image.getRaster().getDataBuffer()).getData();
+		this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		this.pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 		this.width = width;
 		this.height = height;
 	}
@@ -24,6 +25,10 @@ public class Image {
 	}
 
 	public BufferedImage getBufferedImage() {
-		return this.image;
+		return image;
+	}
+
+	public void setPixel(int x, int y, int color) {
+		pixels[x + y * width] = color;
 	}
 }
