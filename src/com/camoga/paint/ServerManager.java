@@ -21,8 +21,12 @@ public class ServerManager {
 		paint.disconnect();
 		if (clients.size() == 1)
 			Window.window.serverTabs.removeAll();
-		else
-			Window.window.serverTabs.removeTabAt(clients.indexOf(paint));
+		else {
+			int i = clients.indexOf(paint);
+			if(i==0) Window.window.serverTabs.setSelectedIndex(1);
+			else Window.window.serverTabs.setSelectedIndex(i-1);
+			Window.window.serverTabs.removeTabAt(i);			
+		}
 	}
 
 	public static void setCurrent(int index) {

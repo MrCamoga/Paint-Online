@@ -11,6 +11,7 @@ import javax.swing.JSeparator;
 import com.camoga.paint.PaintMain;
 import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
+import com.camoga.paint.gui.Window;
 
 public class ServerMenu extends JMenu implements ActionListener {
 	public ServerMenu(String text) {
@@ -36,6 +37,7 @@ public class ServerMenu extends JMenu implements ActionListener {
 				ServerClient current = ServerManager.currentsc;
 				if(PaintMain.main.disconnect(current)) ServerManager.clients.remove(current);
 				System.out.println(ServerManager.clients.size() + " servers");
+				ServerManager.setCurrent(Window.window.serverTabs.getSelectedIndex());
 				break;
 			case "Connect to server":
 				try {

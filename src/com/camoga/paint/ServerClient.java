@@ -77,6 +77,9 @@ public class ServerClient extends JPanel implements Runnable {
 		double ns = 1e6;
 		double delta = 0;
 		while (running) {
+//			System.out.println(Window.window.serverTabs.getSelectedIndex());
+//			System.out.println(getCurrentPP().image.UUID);
+			System.out.println(ServerManager.currentsc.socketClient.getAddress().getHostAddress());
 			if (Window.window.serverTabs.getTitleAt(Window.window.serverTabs.getSelectedIndex()).equals(socketClient.getAddress().getHostAddress())) {
 				long now = System.nanoTime();
 				delta += (now - last) / ns;
@@ -244,7 +247,7 @@ public class ServerClient extends JPanel implements Runnable {
 
 	public void removeImage(int UUID) {
 		System.out.println(UUID);
-		//TODO Paint freezes for 15s after deleting image
+		//DONE Paint freezes for 15s after deleting image
 		PaintPanel pp = getPP(UUID);
 		System.out.println("Remove PaintPanel " + pp.image.UUID);
 		pp.render = false;
