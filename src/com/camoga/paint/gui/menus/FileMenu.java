@@ -3,6 +3,8 @@ package com.camoga.paint.gui.menus;
 import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.KeyEvent;
+import java.util.Random;
 
 import javax.swing.Box;
 import javax.swing.JLabel;
@@ -19,7 +21,6 @@ import com.camoga.paint.ServerManager;
 import com.camoga.paint.Utils;
 import com.camoga.paint.net.packets.Packet08NewImage;
 import com.camoga.paint.net.packets.Packet12DeleteImage;
-import com.sun.glass.events.KeyEvent;
 
 public class FileMenu extends JMenu implements ActionListener {
 	public FileMenu(String text) {
@@ -68,8 +69,9 @@ public class FileMenu extends JMenu implements ActionListener {
 				int result = JOptionPane.showConfirmDialog(null, inputs, "Please enter image dimensions", 2);
 
 				if (result == 0) {
-					Packet08NewImage createImage = new Packet08NewImage((int) width.getValue(), (int)height.getValue(), -1);
+					Packet08NewImage createImage = new Packet08NewImage((int) width.getValue(), (int)height.getValue(), new Random().nextInt());
 					createImage.writeData(ServerManager.currentsc.socketClient);
+					System.out.println("new image " + createImage.getUUID());
 				}
 				break;
 			case "Open":
@@ -79,14 +81,14 @@ public class FileMenu extends JMenu implements ActionListener {
 				System.exit(0);
 				break;
 			case "Save":
-				Utils.saveImage(ServerManager.currentsc.tabImages.getSelectedIndex());
+				Utils.saveImage(ServerManager.currentsc.getCurrentImage());
 				break;
 			case "Close":
 				break;
 			case "Save as":
 				break;
 			case "Delete current image":
-				Packet12DeleteImage delete = new Packet12DeleteImage(ServerManager.currentsc.tabImages.getSelectedIndex());
+				Packet12DeleteImage delete = new Packet12DeleteImage(ServerManager.currentsc.getCurrentImageUUID());
 				delete.writeData(ServerManager.currentsc.socketClient);
 				break;
 

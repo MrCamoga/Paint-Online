@@ -5,16 +5,16 @@ import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet12DeleteImage extends Packet {
 	
-	private int imageid;
+	private int uuid;
 
 	public Packet12DeleteImage(byte[] data) {
 		super(12);
-		this.imageid = Serialize.wrap(data, 1, data.length-1).get();
+		this.uuid = Serialize.wrap(data, 1, data.length-1).getInt();
 	}
 
-	public Packet12DeleteImage(int imageid) {
+	public Packet12DeleteImage(int uuid) {
 		super(12);
-		this.imageid = imageid;
+		this.uuid = uuid;
 	}
 
 	public void writeData(ClientSocket client) {
@@ -26,10 +26,10 @@ public class Packet12DeleteImage extends Packet {
 	}
 
 	public byte[] getData() {
-		return new byte[]{12, (byte)imageid};
+		return Serialize.allocate(5).put(12).putInt(uuid).array();
 	}
 
-	public int getId() {
-		return this.imageid;
+	public int getUUID() {
+		return uuid;
 	}
 }

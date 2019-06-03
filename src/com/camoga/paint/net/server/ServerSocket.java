@@ -15,6 +15,7 @@ import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
 import com.camoga.paint.ClientMP;
+import com.camoga.paint.Image;
 import com.camoga.paint.Utils;
 import com.camoga.paint.checkver.Check;
 import com.camoga.paint.net.packets.Packet;
@@ -100,9 +101,10 @@ public class ServerSocket extends Thread {
 		new Thread(new Runnable() {
 			public void run() {
 				Scanner sc = new Scanner(System.in);
-				while(true) {
+				while(!Thread.interrupted()) {
 					commands.exec(sc.nextLine().split(" "));
 				}
+				sc.close();
 			}
 		}, "Console input").start();
 		
@@ -132,11 +134,11 @@ public class ServerSocket extends Thread {
 			if(Utils.getClientMPIndex(((Packet00Login) packet).getUsername(), clients) == -1) {
 				addConnection((Packet00Login)packet, address, port);
 
-				for(int i = 0; i < paint.pixels.size(); i++) {
-					sendInitializationData(address, port, i);
+				for(Image img : paint.images) {
+					sendInitializationData(address, port, img);
 				}
-				for(int i = 0; i < paint.pixels.size(); i++) {
-					sendImage(address, port, i);									
+				for(Image img : paint.images) {
+					sendImage(address, port, img);									
 				}
 			} else {
 				commands.print("User already connected to the server");
@@ -148,7 +150,7 @@ public class ServerSocket extends Thread {
 					((Packet01Paint) packet).getY(),
 					((Packet01Paint) packet).getSize(),
 					((Packet01Paint) packet).getColor(),
-					((Packet01Paint) packet).getImage());
+					((Packet01Paint) packet).getUUID());
 			packet.writeData(this);
 			break;
 			//TODO upload image
@@ -174,16 +176,16 @@ public class ServerSocket extends Thread {
 			packet = new Packet07FillBucket(data);
 			int x = ((Packet07FillBucket) packet).getX();
 			int y = ((Packet07FillBucket) packet).getY();
-			int imageid = ((Packet07FillBucket) packet).getImage();
-			paint.floodFill(x, y, paint.pixels.get(imageid)[x+y*paint.size.get(imageid)[0]], ((Packet07FillBucket) packet).getColor(), imageid);
+			int uuid = ((Packet07FillBucket) packet).getUUID();
+			paint.floodFill(x, y, paint.getImage(uuid).getPixel(x, y), ((Packet07FillBucket) packet).getColor(), uuid);
 			packet.writeData(this);
 			break;
-			//DONE image width and height
 		case NEWIMAGE:
 			packet = new Packet08NewImage(data);
-			paint.addImage(((Packet08NewImage) packet).getWidth(), ((Packet08NewImage) packet).getHeight());
+			paint.addImage(((Packet08NewImage) packet).getWidth(), ((Packet08NewImage) packet).getHeight(), ((Packet08NewImage) packet).getUUID());
+			System.out.println("new image " + ((Packet08NewImage) packet).getUUID());
 			commands.print("new image was created\n");
-			createImage((Packet08NewImage) packet, paint.pixels.size()-1);
+			packet.writeData(this);
 			break;
 		case VERSION:
 			packet = new Packet10Version(data);
@@ -200,12 +202,13 @@ public class ServerSocket extends Thread {
 		case DELETEIMAGE:
 			packet = new Packet12DeleteImage(data);
 			String username = getClient(address, port).getUsername();
+			//TODO isAdmin
 			for(ClientMP c : admins) {
 				if(username.equals(c.getUsername())) {
-					paint.removeImage(((Packet12DeleteImage) packet).getId());
-					Packet12DeleteImage deleteImage = new Packet12DeleteImage(((Packet12DeleteImage) packet).getId());
+					paint.removeImage(((Packet12DeleteImage) packet).getUUID());
+					Packet12DeleteImage deleteImage = new Packet12DeleteImage(((Packet12DeleteImage) packet).getUUID());
 					deleteImage.writeData(this);
-					commands.print("image " + deleteImage.getId() + " was deleted by " + c.getUsername());
+					commands.print("image " + deleteImage.getUUID() + " was deleted by " + c.getUsername());
 					break;
 				}
 			}
@@ -214,7 +217,16 @@ public class ServerSocket extends Thread {
 			packet = new Packet13Cursor(data);
 			packet.writeData(this);
 		}
-		System.out.println(packet);
+//		System.out.println(packet);
+	}
+	
+	public boolean isAdmin(String username) {
+		for(ClientMP c : admins) {
+			if(username.equals(c.getUsername())) return true;
+		}
+		
+		return false;
+		
 	}
 	
 	private boolean handleChat(Packet06Chat packet, InetAddress address, int port) {
@@ -222,7 +234,6 @@ public class ServerSocket extends Thread {
 		String[] msg = packet.getMessage().split(" ");
 		switch(msg[0]) {
 		case "/msg":
-			//DONE if user sends message to himself it will receive two messages
 			int clientIndex = Utils.getClientMPIndex(msg[1],clients);
 			if(clientIndex != -1) {
 				Packet06Chat sendMessage = new Packet06Chat(packet.getUsername(), "PM: " + packet.getMessage().substring(6+msg[1].length()));
@@ -245,9 +256,8 @@ public class ServerSocket extends Thread {
 		return null;
 	}
 	
-	//DONE send image correctly
-	private void sendImage(InetAddress address, int port, int imageId) {
-		int imagesize = paint.pixels.get(imageId).length;
+	private void sendImage(InetAddress address, int port, Image image) {
+		int imagesize = image.pixels.length;
 		int l = Packet03PixelArray.packetsize;
 		for(int pid = 0; pid < Math.ceil(imagesize/(double)l); pid++) {
 			int[] pack = new int[l];
@@ -256,9 +266,9 @@ public class ServerSocket extends Thread {
 				System.out.println(pack.length);
 			}
 			for(int i = 0; i < pack.length; i++) {
-				pack[i] = paint.pixels.get(imageId)[pid*l+i];
+				pack[i] = image.getPixel(pid*l+i);
 			}
-			Packet03PixelArray packet = new Packet03PixelArray(pid, imageId, pack);
+			Packet03PixelArray packet = new Packet03PixelArray(pid, image.UUID, pack);
 			sendData(packet.getData(), address, port);
 		}
 
@@ -286,13 +296,8 @@ public class ServerSocket extends Thread {
 		packet.writeData(this);
 	}
 	
-	public void createImage(Packet08NewImage packet, int imageid) {
-		packet.imageid = imageid;
-		packet.writeData(this);
-	}
-	
-	private void sendInitializationData(InetAddress address, int port, int imageId) {
-		Packet08NewImage startData = new Packet08NewImage(paint.size.get(imageId)[0], paint.size.get(imageId)[1], imageId);
+	private void sendInitializationData(InetAddress address, int port, Image image) {
+		Packet08NewImage startData = new Packet08NewImage(image.width, image.height, image.UUID);
 		sendData(startData.getData(), address, port);
 	}
 	

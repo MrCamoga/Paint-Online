@@ -1,8 +1,5 @@
 package com.camoga.paint.net.packets;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
@@ -11,7 +8,7 @@ public class Packet13Cursor extends Packet {
 	private int x;
 	private int y;
 	private int tool;
-	private int imageid;
+	private int uuid;
 
 	public Packet13Cursor(byte[] data) {
 		super(13);
@@ -19,17 +16,17 @@ public class Packet13Cursor extends Packet {
 		this.x = s.getShort();
 		this.y = s.getShort();
 		this.tool = s.get();
-		this.imageid = s.get();
+		this.uuid = s.getInt();
 		this.username = s.getString(true);
 	}
 
-	public Packet13Cursor(String username, int x, int y, int tool, int imageid) {
+	public Packet13Cursor(String username, int x, int y, int tool, int uuid) {
 		super(13);
 		this.username = username;
 		this.x = x;
 		this.y = y;
 		this.tool = tool;
-		this.imageid = imageid;
+		this.uuid = uuid;
 	}
 
 	public void writeData(ClientSocket client) {
@@ -41,32 +38,32 @@ public class Packet13Cursor extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(1+2+2+1+1+1+username.length())
-				.put((byte)13)
-				.putShort((short)x)
-				.putShort((short)y)
-				.put((byte)tool)
-				.put((byte)imageid)
+		return Serialize.allocate(1+2+2+1+4+1+username.length())
+				.put(13)
+				.putShort(x)
+				.putShort(y)
+				.put(tool)
+				.putInt(uuid)
 				.putString(username, true).array();
 	}
 
 	public int getTool() {
-		return this.tool;
+		return tool;
 	}
 
 	public int getX() {
-		return this.x;
+		return x;
 	}
 
 	public int getY() {
-		return this.y;
+		return y;
 	}
 
 	public String getUsername() {
-		return this.username;
+		return username;
 	}
 
-	public int getImageId() {
-		return this.imageid;
+	public int getUUID() {
+		return uuid;
 	}
 }

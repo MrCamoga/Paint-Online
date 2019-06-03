@@ -3,7 +3,6 @@ package com.camoga.paint;
 import java.awt.BorderLayout;
 import java.awt.Dimension;
 import java.awt.Point;
-import java.awt.image.BufferedImage;
 import java.util.ArrayList;
 import java.util.HashMap;
 
@@ -43,11 +42,10 @@ public class ServerClient extends JPanel implements Runnable {
 	public boolean running;
 	public Thread thread;
 	public JTabbedPane tabImages = new JTabbedPane();
-
+	
 	public ClientSocket socketClient;
 
-	public ArrayList<Image> image = new ArrayList<Image>();
-	public ArrayList<PaintPanel> paipanels = new ArrayList<PaintPanel>();
+	public ArrayList<PaintPanel> paintpanels = new ArrayList<PaintPanel>();
 	public ArrayList<ClientMP> connectedClients = new ArrayList<ClientMP>();
 	public HashMap<String, Cursor> cursors = new HashMap<String, Cursor>();
 
@@ -59,20 +57,19 @@ public class ServerClient extends JPanel implements Runnable {
 		add(chat, BorderLayout.EAST);
 	}
 
-	public void init(int width, int height, int imageid) {
+	public void init(int width, int height, int UUID) {
 		PaintPanel pp = new PaintPanel(this);
-		System.out.println(width + ", " + height);
-		Image img = new Image(width, height);
 		pp.scale = (512 / height);
-		image.add(img);
-		pp.DIMENSION = new Dimension(width, height);
 		pp.canvas.setSize(512, 512);
+		pp.DIMENSION = new Dimension(width, height);
+		Image img = new Image(width, height, UUID);
+		pp.image = img;
+		paintpanels.add(pp);
 
-		for (int i = 0; i < image.get(imageid).getPixels().length; i++) {
-			image.get(imageid).getPixels()[i] = 0xffffff;
+		for (int i = 0; i < img.getPixels().length; i++) {
+			img.setPixel(i, 0xffffff);
 		}
-		paipanels.add(pp);
-		tabImages.addTab(imageid + "", pp);
+		tabImages.addTab(UUID + "", pp);
 	}
 
 	public void run() {
@@ -80,8 +77,7 @@ public class ServerClient extends JPanel implements Runnable {
 		double ns = 1e6;
 		double delta = 0;
 		while (running) {
-			if (Window.window.serverTabs.getTitleAt(Window.window.serverTabs.getSelectedIndex())
-					.equals(socketClient.getAddress().getHostAddress())) {
+			if (Window.window.serverTabs.getTitleAt(Window.window.serverTabs.getSelectedIndex()).equals(socketClient.getAddress().getHostAddress())) {
 				long now = System.nanoTime();
 				delta += (now - last) / ns;
 				last = now;
@@ -98,10 +94,13 @@ public class ServerClient extends JPanel implements Runnable {
 	int lastY = -1;
 
 	public void tick() {
-		// TODO
+		// TODO different right - left click actions
 		if (Window.window.mouse.pressed) {
-			int WIDTH = image.get(getImageID()).width;
-			int HEIGHT = image.get(getImageID()).height;
+			Integer UUID = getCurrentImageUUID();
+			if(UUID == null) return;
+			Image image = getCurrentImage();
+			int WIDTH = image.width;
+			int HEIGHT = image.height;
 			int ys = Window.window.mouse.pos.y;
 			int xs = Window.window.mouse.pos.x;
 			if ((xs < 0) || (ys < 0) || (xs >= WIDTH) || (ys >= HEIGHT))
@@ -109,26 +108,26 @@ public class ServerClient extends JPanel implements Runnable {
 			if ((ys != lastY) || (xs != lastX)) {
 				switch (tool) {
 				case PENCIL:
-					Packet01Paint paintPacket = new Packet01Paint(xs, ys, brushSize, color, getImageID());
+					Packet01Paint paintPacket = new Packet01Paint(xs, ys, brushSize, color, UUID);
 					paintPacket.writeData(socketClient);
-					pencil(xs, ys, brushSize, color, getImageID());
+					pencil(xs, ys, brushSize, color, UUID);
 					break;
 				case BUCKET:
-					int target = image.get(getImageID()).getPixels()[(xs + ys * WIDTH)];
+					int target = image.getPixel(xs,ys);
 					if (target == color)
 						return;
 					System.out.println("fillbucket");
-					Packet07FillBucket bucketPacket = new Packet07FillBucket(xs, ys, color, getImageID());
+					Packet07FillBucket bucketPacket = new Packet07FillBucket(xs, ys, color, UUID);
 					bucketPacket.writeData(socketClient);
-					floodFill(xs, ys, target, color, getImageID());
+					floodFill(xs, ys, target, color, UUID);
 					break;
 				case RUBBER:
-					Packet01Paint rubberPacket = new Packet01Paint(xs, ys, brushSize, 0x00, getImageID());
+					Packet01Paint rubberPacket = new Packet01Paint(xs, ys, brushSize, 0x00, UUID);
 					rubberPacket.writeData(socketClient);
-					pencil(xs, ys, brushSize, 0x00, getImageID());
+					pencil(xs, ys, brushSize, 0x00, UUID);
 					break;
 				case PICKCOLOR:
-					color = image.get(getImageID()).getPixels()[(xs + ys * HEIGHT)];
+					color = image.getPixel(xs, ys);
 					Packet04SelectColor packet = new Packet04SelectColor(color);
 					packet.writeData(socketClient);
 					break;
@@ -139,7 +138,7 @@ public class ServerClient extends JPanel implements Runnable {
 				case ELIPSEL:
 					break;
 				case COLORSEL:
-					for (int i = 0; i < getImage().pixels.length; i++) {
+					for (int i = 0; i < image.pixels.length; i++) {
 						// getImage().pixels[i];
 					}
 					break;
@@ -152,9 +151,10 @@ public class ServerClient extends JPanel implements Runnable {
 		}
 	}
 
-	public void pencil(int xp, int yp, int size, int color, int imageid) {
-		int WIDTH = image.get(imageid).width;
-		int HEIGHT = image.get(imageid).height;
+	public void pencil(int xp, int yp, int size, int color, int UUID) {
+		Image image = getImage(UUID);
+		int WIDTH = image.width;
+		int HEIGHT = image.height;
 		for (int y = 0; y < size; y++) {
 			int ya = y + yp - size / 2;
 			for (int x = 0; x < size; x++) {
@@ -162,20 +162,20 @@ public class ServerClient extends JPanel implements Runnable {
 				if (xa < 0 || ya < 0 || xa >= WIDTH || ya >= HEIGHT)
 					;
 				else if (Math.abs((xa - xp) * (xa - xp) + (ya - yp) * (ya - yp)) < size * size / 4 + 2) {
-					if (image.get(imageid).getPixels()[(xa + ya * WIDTH)] != color) {
-						setRGB(xa, ya, color, imageid);
+					if (image.getPixel(xa, ya) != color) {
+						image.setPixel(xa, ya, color);
 					}
 				}
 			}
 		}
 	}
-
-	public void setRGB(int x, int y, int color, int imageid) {
-		image.get(imageid).getPixels()[(x + y * image.get(imageid).width)] = color;
-	}
-
+	
 	public void render() {
-		getCurrentPP().render();
+		if(tabImages.getSelectedIndex() < paintpanels.size() && tabImages.getSelectedIndex() >= 0) {
+//			System.out.println(tabImages.getSelectedIndex());
+			getCurrentPP().render();
+//			System.out.println(getCurrentPP().render);
+		}
 	}
 
 	public void start() {
@@ -197,70 +197,77 @@ public class ServerClient extends JPanel implements Runnable {
 		}
 	}
 
-	ArrayList<Point> queue = new ArrayList();
 
 	// TODO change floodFill algorithm
 	
-	public void floodFill(int x, int y, int targetColor, int color, int imageid) {
-		int WIDTH = image.get(imageid).width;
-		int HEIGHT = image.get(imageid).height;
+	ArrayList<Point> queue = new ArrayList<Point>();
+	public void floodFill(int x, int y, int targetColor, int color, int UUID) {
+		Image image = getImage(UUID);
+		int WIDTH = image.width;
+		int HEIGHT = image.height;
 		if(queue.size()>0) queue.remove(0);
-		while(y > 0 && image.get(imageid).getPixel(x, y-1) == targetColor) {
+		while(y > 0 && image.getPixel(x, y-1) == targetColor) {
 			y--;
 		}
 		boolean left = false, right = false;
-		while(y < HEIGHT && image.get(imageid).getPixel(x, y) == targetColor) {
-			image.get(imageid).setPixel(x,y, color);
+		while(y < HEIGHT && image.getPixel(x, y) == targetColor) {
+			image.setPixel(x,y, color);
 			
-			if(!left && x > 0 && image.get(imageid).getPixel(x-1, y) == targetColor) {
+			if(!left && x > 0 && image.getPixel(x-1, y) == targetColor) {
 				int ytemp = y;
-				while(ytemp > 0 && image.get(imageid).getPixel(x-1, ytemp-1) == targetColor) {
+				while(ytemp > 0 && image.getPixel(x-1, ytemp-1) == targetColor) {
 					ytemp--;
 				}
 				queue.add(new Point(x-1, ytemp));
 				left = true;
-			} else if(left && x > 0 && image.get(imageid).getPixel(x-1, y) != targetColor) left = false;
-			if(!right && x < WIDTH - 1 && image.get(imageid).getPixel(x+1,y) == targetColor) {
+			} else if(left && x > 0 && image.getPixel(x-1, y) != targetColor) left = false;
+			if(!right && x < WIDTH - 1 && image.getPixel(x+1,y) == targetColor) {
 				int ytemp = y;
-				while(ytemp > 0 && image.get(imageid).getPixel(x+1, ytemp-1) == targetColor) {
+				while(ytemp > 0 && image.getPixel(x+1, ytemp-1) == targetColor) {
 					ytemp--;
 				}
 				queue.add(new Point(x+1, ytemp));
 				right = true;
-			} else if(right && x < WIDTH - 1 && image.get(imageid).getPixel(x+1, y) != targetColor) {
-				System.out.println(right);
-				right = false;
-			}
-			
+			} else if(right && x < WIDTH - 1 && image.getPixel(x+1, y) != targetColor) right = false;
 			
 			y++;
 		}
-		System.out.println(x + ", " + y);
 		if(queue.size()>0)
-		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, imageid);
+		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, UUID);
 	}
 
-	public void imagepacket(int[] pixels, int num, int imageid) {
-//		System.out.println(num);
+	public void imagepacket(int[] pixels, int num, int UUID) {
 		for (int i = 0; i < pixels.length; i++) {
-			image.get(imageid).getPixels()[(num * Packet03PixelArray.packetsize + i)] = pixels[i];
+			getImage(UUID).setPixel(num * Packet03PixelArray.packetsize + i, pixels[i]);
 		}
 	}
 
-	public void addImage(int width, int height) {
-		image.add(new Image(width, height));
-	}
+	public void removeImage(int UUID) {
+		System.out.println(UUID);
+		//TODO Paint freezes for 15s after deleting image
+		PaintPanel pp = getPP(UUID);
+		System.out.println("Remove PaintPanel " + pp.image.UUID);
+		pp.render = false;
+		try {
+			Thread.sleep(300);
+		} catch (InterruptedException e) {
+			e.printStackTrace();
+		}
+		int i = 0;
+		for(PaintPanel p : paintpanels) {
+			if(p.image.UUID == UUID) break;
+			i++;
+		}
+		paintpanels.remove(pp);
+		if(paintpanels.size() == 0) {
+			tabImages.removeAll();
+			System.out.println("remove all images");
+		} else {
+			if(i == 0) tabImages.setSelectedIndex(1);
+			else tabImages.setSelectedIndex(i-1);
+			tabImages.removeTabAt(i);
+		}
 
-	public void removeImage(int imageid) {
-		image.remove(imageid);
-	}
-
-	public BufferedImage getBufferedImage() {
-		return getImage().getBufferedImage();
-	}
-
-	public Image getImage() {
-		return image.get(getImageID());
 	}
 
 	// TODO draw line
@@ -304,14 +311,37 @@ public class ServerClient extends JPanel implements Runnable {
 	}
 
 	public PaintPanel getCurrentPP() {
-		return paipanels.get(getImageID());
+		return paintpanels.get(tabImages.getSelectedIndex());
+	}
+	
+	public PaintPanel getPP(int uuid) {
+		for(PaintPanel pp : paintpanels) {
+			if(pp.image.UUID == uuid) return pp;
+		}
+		
+		return null;
 	}
 
-	public int getImageID() {
-		return tabImages.getSelectedIndex();
+	public Integer getCurrentImageUUID() {
+		if(tabImages.getSelectedIndex() < 0) return null;
+//		System.out.println(tabImages.getSelectedIndex());
+//		System.out.println(paintpanels.size());
+		int uuid = paintpanels.get(tabImages.getSelectedIndex()).image.UUID;
+		return uuid;
+	}
+	
+	public Image getImage(Integer uuid) {
+		if(uuid == null) return null;
+		PaintPanel pp = getPP(uuid);
+		if(pp != null) return pp.image;
+		return null;
+	}
+	
+	public Image getCurrentImage() {
+		return getImage(getCurrentImageUUID());
 	}
 
 	public void disconnect() {
-		image.clear();
+		paintpanels.clear();
 	}
 }

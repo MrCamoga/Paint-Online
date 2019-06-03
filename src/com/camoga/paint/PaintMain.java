@@ -3,16 +3,12 @@ package com.camoga.paint;
 import java.awt.HeadlessException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.Random;
-
-import javax.swing.JOptionPane;
 
 import com.camoga.paint.gui.Window;
 import com.camoga.paint.gui.panels.LoginFrame;
 import com.camoga.paint.net.client.ClientSocket;
-import com.camoga.paint.net.packets.Packet00Login;
 import com.camoga.paint.net.packets.Packet05Disconnect;
 import com.camoga.paint.net.packets.Packet10Version;
 import com.camoga.paint.net.packets.Packet11Password;
@@ -62,7 +58,7 @@ public class PaintMain extends Thread {
 	
 	public void disconnectAll() {
 		for(Iterator<ServerClient> iterator = ServerManager.clients.iterator(); iterator.hasNext();) {
-			ServerClient pc = (ServerClient)iterator.next();
+			ServerClient pc = iterator.next();
 			if(disconnect(pc)) iterator.remove();
 		}
 	}

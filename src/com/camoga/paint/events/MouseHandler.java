@@ -7,7 +7,6 @@ import java.awt.event.MouseMotionListener;
 import java.awt.event.MouseWheelEvent;
 import java.awt.event.MouseWheelListener;
 
-import com.camoga.paint.Image;
 import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.gui.Window;
@@ -57,7 +56,7 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 	public void moveCursor(MouseEvent e) {
 		Packet13Cursor cursor = new Packet13Cursor(ServerManager.currentsc.socketClient.client.getUsername(), e.getPoint().x,
 				e.getPoint().y, ServerManager.currentsc.tool.getId(),
-				ServerManager.currentsc.tabImages.getSelectedIndex());
+				ServerManager.currentsc.getCurrentImageUUID());
 		cursor.writeData(ServerManager.currentsc.socketClient);
 	}
 
@@ -84,10 +83,9 @@ public class MouseHandler implements MouseListener, MouseMotionListener, MouseWh
 		if (e.getButton() == 1) {
 			pressed = true;
 		} else if (e.getButton() == 3) {
-			ServerClient pc = (ServerClient) ServerManager.clients.get(window.serverTabs.getSelectedIndex());
-			int color = ((Image) pc.image.get(pc.tabImages.getSelectedIndex())).getPixels()[(pos.x
-					+ pos.y * ((Image) pc.image.get(pc.tabImages.getSelectedIndex())).width)];
-			pc.getCurrentPP().changeColor(color);
+			ServerClient sc = ServerManager.clients.get(window.serverTabs.getSelectedIndex());
+			int color = sc.getCurrentImage().getPixel(pos.x, pos.y);
+			sc.getCurrentPP().changeColor(color);
 			Packet04SelectColor colorPacket = new Packet04SelectColor(color);
 			colorPacket.writeData(ServerManager.currentsc.socketClient);
 		}

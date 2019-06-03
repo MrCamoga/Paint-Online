@@ -12,7 +12,6 @@ import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.JTextField;
 
-import com.camoga.paint.PaintMain;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.net.packets.Packet06Chat;
 
@@ -20,8 +19,7 @@ public class Chat extends JPanel {
 	public JTextArea chatBox;
 	public JScrollPane scrollPane;
 	public JTextField chatType;
-	public DefaultListModel<String> listOfUsers = new DefaultListModel();
-	public JList<String> connectedUsers = new JList(listOfUsers);
+	public JList<String> connectedUsers = new JList<String>(new DefaultListModel<String>());
 
 	public Chat() {
 		setLayout(new BoxLayout(this, 1));
@@ -68,9 +66,9 @@ public class Chat extends JPanel {
 
 	public void modifyList(String username, int i) {
 		if (i == -1)
-			listOfUsers.addElement(username);
+			((DefaultListModel<String>)connectedUsers.getModel()).addElement(username);
 		else
-			listOfUsers.remove(i);
+			((DefaultListModel<String>)connectedUsers.getModel()).remove(i);
 	}
 
 	public void addText(String msg) {

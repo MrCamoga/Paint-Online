@@ -1,11 +1,13 @@
 package com.camoga.paint.gui.panels;
 
-import com.camoga.paint.gui.Window;
 import java.awt.GridLayout;
+
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
+
+import com.camoga.paint.gui.Window;
 
 public class LoginFrame extends JPanel {
 	private JTextField address = new JTextField();

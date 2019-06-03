@@ -17,14 +17,12 @@ public class ServerManager {
 	}
 
 	public static void removeServer(ServerClient paint) {
+		paint.stop();
+		paint.disconnect();
 		if (clients.size() == 1)
 			Window.window.serverTabs.removeAll();
 		else
 			Window.window.serverTabs.removeTabAt(clients.indexOf(paint));
-		clients.remove(paint);
-
-		paint.stop();
-		paint.disconnect();
 	}
 
 	public static void setCurrent(int index) {

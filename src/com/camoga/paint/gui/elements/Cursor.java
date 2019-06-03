@@ -5,17 +5,19 @@ import java.awt.Font;
 import java.awt.FontMetrics;
 import java.awt.Graphics;
 import java.awt.image.BufferedImage;
-import java.io.FileInputStream;
+import java.io.IOException;
 
 import javax.imageio.ImageIO;
-import javax.swing.JButton;
 
 import com.camoga.paint.ClientMP;
 
-public class Cursor extends JButton {
+public class Cursor {
 	public int x;
 	public int y;
-	public int imageid;
+	/**
+	 * uuid of image where the cursor is
+	 */
+	public int uuid;
 	public CursorTypes cursor;
 	public ClientMP client;
 
@@ -36,7 +38,7 @@ public class Cursor extends JButton {
 			this.path = path;
 			try {
 				cursorImage = ImageIO.read(Cursor.class.getResourceAsStream("/cursors/"+path));
-			} catch (Exception e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
 		}
@@ -46,10 +48,10 @@ public class Cursor extends JButton {
 		}
 	}
 
-	public Cursor(ClientMP client, int x, int y, int tool, int imageid) {
+	public Cursor(ClientMP client, int x, int y, int tool, int uuid) {
 		this.x = x;
 		this.y = y;
-		this.imageid = imageid;
+		this.uuid = uuid;
 		this.client = client;
 		cursor = getCursorType(tool);
 	}
@@ -66,10 +68,10 @@ public class Cursor extends JButton {
 		this(client, 0);
 	}
 
-	public void update(int x, int y, int tool, int imageid) {
+	public void update(int x, int y, int tool, int uuid) {
 		this.x = x;
 		this.y = y;
-		this.imageid = imageid;
+		this.uuid = uuid;
 		this.cursor = getCursorType(tool);
 	}
 
@@ -78,20 +80,14 @@ public class Cursor extends JButton {
 		FontMetrics fm = g.getFontMetrics();
 		g.drawImage(cursor.cursorImage, x - cursor.x, y - cursor.y, null);
 		g.setColor(Color.lightGray);
-		g.fillRoundRect(x + 16, y + 7, 2 + fm.stringWidth(client.getUsername()), g.getFont().getSize(),
-				5, 5);
+		g.fillRoundRect(x + 16, y + 7, 2 + fm.stringWidth(client.getUsername()), g.getFont().getSize(), 5, 5);
 		g.setColor(Color.black);
 		g.drawString(client.getUsername(), x + 16, y + 20);
 	}
 
 	public static CursorTypes getCursorType(int tool) {
-		CursorTypes[] arrayOfCursorTypes;
-		int j = (arrayOfCursorTypes = CursorTypes.values()).length;
-		for (int i = 0; i < j; i++) {
-			CursorTypes t = arrayOfCursorTypes[i];
-			if (t.tool == tool) {
-				return t;
-			}
+		for(CursorTypes c: CursorTypes.values()) {
+			if(c.tool == tool) return c;
 		}
 		return CursorTypes.DEFAULT;
 	}

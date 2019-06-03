@@ -1,14 +1,11 @@
 package com.camoga.paint.net.packets;
 
-import java.nio.ByteBuffer;
-import java.util.Arrays;
-
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet01Paint extends Packet {
 
-	private int x, y, color, size, id;
+	private int x, y, color, size, uuid;
 	
 	public Packet01Paint(byte[] data) {
 		super(01);
@@ -17,16 +14,16 @@ public class Packet01Paint extends Packet {
 		y = s.get();
 		size = s.get();
 		color = s.getInt();
-		id = s.get();
+		uuid = s.getInt();
 	}
 	
-	public Packet01Paint(int x, int y, int size, int color, int id) {
+	public Packet01Paint(int x, int y, int size, int color, int uuid) {
 		super(01);
 		this.x = x;
 		this.y = y;
 		this.color = color;
 		this.size = size;
-		this.id = id;
+		this.uuid = uuid;
 	}
 
 	public void writeData(ClientSocket client) {
@@ -38,7 +35,7 @@ public class Packet01Paint extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(9).put(1).put(x).put(y).put(size).putInt(color).put(id).array();
+		return Serialize.allocate(12).put(1).put(x).put(y).put(size).putInt(color).putInt(uuid).array();
 	}
 	
 	public int getX() {
@@ -57,7 +54,7 @@ public class Packet01Paint extends Packet {
 		return size;
 	}
 
-	public int getImage() {
-		return id;
+	public int getUUID() {
+		return uuid;
 	}
 }

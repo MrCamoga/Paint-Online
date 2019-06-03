@@ -1,7 +1,6 @@
 package com.camoga.paint.net.packets;
 
 import java.nio.ByteBuffer;
-import java.util.Arrays;
 
 public class Serialize {
 	

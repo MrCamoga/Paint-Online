@@ -1,7 +1,5 @@
 package com.camoga.paint.net.packets;
 
-import java.nio.ByteBuffer;
-
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 

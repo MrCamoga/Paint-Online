@@ -1,13 +1,16 @@
 package com.camoga.paint.gui.menus;
 
-import com.camoga.paint.PaintMain;
-import com.camoga.paint.ServerManager;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.net.UnknownHostException;
+
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
 import javax.swing.JSeparator;
+
+import com.camoga.paint.PaintMain;
+import com.camoga.paint.ServerClient;
+import com.camoga.paint.ServerManager;
 
 public class ServerMenu extends JMenu implements ActionListener {
 	public ServerMenu(String text) {
@@ -30,7 +33,9 @@ public class ServerMenu extends JMenu implements ActionListener {
 			case "Work offline":
 				break;
 			case "Disconnect from server":
-				PaintMain.main.disconnect(ServerManager.currentsc);
+				ServerClient current = ServerManager.currentsc;
+				if(PaintMain.main.disconnect(current)) ServerManager.clients.remove(current);
+				System.out.println(ServerManager.clients.size() + " servers");
 				break;
 			case "Connect to server":
 				try {

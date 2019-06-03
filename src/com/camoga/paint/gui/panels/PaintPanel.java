@@ -13,7 +13,6 @@ import java.awt.image.BufferedImage;
 
 import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JFrame;
 import javax.swing.JLabel;
 import javax.swing.JPanel;
 import javax.swing.JSlider;
@@ -21,7 +20,7 @@ import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
 
-import com.camoga.paint.PaintMain;
+import com.camoga.paint.Image;
 import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.gui.Window;
@@ -33,7 +32,7 @@ public class PaintPanel extends JPanel {
 	//TODO selections
 	public int[] pixelsSelected;
 	public JButton[] colors;
-	public JButton[] recent = new JButton[400];
+	public JButton[] recent;
 
 	public JButton colorPicked;
 
@@ -46,8 +45,10 @@ public class PaintPanel extends JPanel {
 	public JButton colorpicker;
 
 	public Canvas canvas;
+	public Image image;
 	public Dimension DIMENSION;
 	public int scale;
+	public boolean render = true;
 
 	public PaintPanel(final ServerClient sc) {
 		this.sc = sc;
@@ -76,6 +77,7 @@ public class PaintPanel extends JPanel {
 		}
 
 		palette(3,2,3);
+		recentColors(10, 10);
 		colorPicked = new JButton();
 		colorPicked.setBounds(200, 512, 100, 100);
 		colorPicked.setEnabled(false);
@@ -92,6 +94,29 @@ public class PaintPanel extends JPanel {
 		}
 		add(slider);
 	}
+	
+	public void recentColors(int width, int height) {
+		recent = new JButton[width*height];
+		for (int i = 0; i < recent.length; i++) {
+			recent[i] = new JButton();
+			recent[i].setFocusPainted(false);
+			recent[i].setBorderPainted(false);
+			recent[i].setBounds(532 + i % width * 8, 540 + i / width * 8, 8, 8);
+			recent[i].setBackground(new Color(-1));
+			final int c = i;
+			recent[i].addActionListener(new ActionListener() {
+				public void actionPerformed(ActionEvent e) {
+					int rgb = recent[c].getBackground().getRGB();
+					if (rgb == -1)
+						changeColor(-1);
+					else
+						changeColor(rgb);
+				}
+
+			});
+			add(recent[i]);
+		}
+	}
 
 	public void palette(int red, int green, int blue) {
 		if(colors != null) {
@@ -105,7 +130,6 @@ public class PaintPanel extends JPanel {
 		colors = new JButton[noc];
 		int width = 8 * (1 << green);
 		int height = (1 << red + blue) / width;
-		//DONE
 		for (int i = 0; i < colors.length; i++) {
 			colors[i] = new JButton();
 			colors[i].setFocusPainted(false);
@@ -136,25 +160,7 @@ public class PaintPanel extends JPanel {
 			add(colors[i]);
 		}
 
-		for (int i = 0; i < recent.length; i++) {
-			recent[i] = new JButton();
-			recent[i].setFocusPainted(false);
-			recent[i].setBorderPainted(false);
-			recent[i].setBounds(532 + i % 20 * 8, 540 + i / 20 * 8, 8, 8);
-			recent[i].setBackground(new Color(-1));
-			final int c = i;
-			recent[i].addActionListener(new ActionListener() {
-				public void actionPerformed(ActionEvent e) {
-					int rgb = recent[c].getBackground().getRGB();
-					if (rgb == -1)
-						changeColor(-1);
-					else
-						changeColor(rgb);
-				}
-
-			});
-			add(recent[i]);
-		}
+		
 		revalidate();
 		repaint();
 	}
@@ -172,11 +178,13 @@ public class PaintPanel extends JPanel {
 	}
 
 	public void render() {
+		if(!render) return;
 		BufferStrategy buffer = canvas.getBufferStrategy();
 		if (buffer == null) {
 			canvas.createBufferStrategy(3);
 			return;
 		}
+//		System.out.println("render");
 		Graphics g = buffer.getDrawGraphics();
 
 //		g.setColor(Color.RED);
@@ -187,22 +195,24 @@ public class PaintPanel extends JPanel {
 				g.fillRect(j*scale, i*scale, scale, scale);
 			}
 		}
-
-		g.drawImage(sc.getBufferedImage(), canvas.getX(), canvas.getY(), DIMENSION.width * scale,
+		
+//		System.out.println(sc.getCurrentImage().UUID);
+		g.drawImage(sc.getCurrentImage().getBufferedImage(), canvas.getX(), canvas.getY(), DIMENSION.width * scale,
 				DIMENSION.height * scale, null);
 
 		g.setColor(Color.red);
 		if (sc.brushSize % 2 == 1)
-			g.drawOval((int) (Window.window.mouse.pos.x - sc.brushSize * 0.5D + 1.0D) * scale,
-					(int) (Window.window.mouse.pos.y - sc.brushSize * 0.5D + 1.0D) * scale, sc.brushSize * scale,
+			g.drawOval((int) (Window.window.mouse.pos.x - sc.brushSize * 0.5 + 1.0) * scale,
+					(int) (Window.window.mouse.pos.y - sc.brushSize * 0.5 + 1.0) * scale, sc.brushSize * scale,
 					sc.brushSize * scale);
 		else {
-			g.drawOval((int) (Window.window.mouse.pos.x - sc.brushSize * 0.5D) * scale,
-					(int) (Window.window.mouse.pos.y - sc.brushSize * 0.5D) * scale, sc.brushSize * scale,
+			g.drawOval((int) (Window.window.mouse.pos.x - sc.brushSize * 0.5) * scale,
+					(int) (Window.window.mouse.pos.y - sc.brushSize * 0.5) * scale, sc.brushSize * scale,
 					sc.brushSize * scale);
 		}
+
 		for (Cursor c : sc.cursors.values()) {
-			if (c.imageid == sc.getImageID()) {
+			if (c.uuid == sc.getCurrentImageUUID()) {
 				c.render(g);
 			}
 		}

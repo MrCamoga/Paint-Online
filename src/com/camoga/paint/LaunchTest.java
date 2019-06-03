@@ -4,8 +4,6 @@ import java.awt.HeadlessException;
 import java.net.UnknownHostException;
 import java.util.Random;
 
-import javax.swing.JFrame;
-
 import com.camoga.paint.net.server.ServerSocket;
 
 public class LaunchTest {

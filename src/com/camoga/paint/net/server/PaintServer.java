@@ -1,41 +1,48 @@
 package com.camoga.paint.net.server;
 
 import java.awt.Point;
-import java.awt.image.BufferedImage;
-import java.awt.image.DataBufferInt;
-import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.Random;
+
+import com.camoga.paint.Image;
 
 public class PaintServer {
 
 	public static PaintServer ps;
-	public ArrayList<int[]> pixels = new ArrayList<>();
-	public ArrayList<int[]> size = new ArrayList<>();
+	public ArrayList<Image> images = new ArrayList<>();
 	private static final int defaultWidth = 64;
 	private static final int defaultHeight = 64;
 
 	public PaintServer() {
 		ps = this;
-		pixels.add(new int[defaultWidth*defaultHeight]);
-		size.add(new int[]{defaultWidth,defaultHeight});
-		init(0);
+		images.add(new Image(defaultWidth, defaultHeight, getNewUUID()));
+		System.out.println(images.get(0).UUID);
+	}
+	
+	public int getNewUUID() {
+		int UUID;
+		do {
+			UUID = new Random().nextInt();
+		} while(getImage(UUID) != null);
+		return UUID;
 	}
 
 	public static void main(String[] a) {
 		new PaintServer();
 	}
 	
-	public void pencil(int xp, int yp, int size, int color, int imageid) {
-		int WIDTH = this.size.get(imageid)[0];
-		int HEIGHT = this.size.get(imageid)[1];
+	public void pencil(int xp, int yp, int size, int color, int uuid) {
+		Image image = getImage(uuid);
+		int width = image.width;
+		int height = image.height;
 		for (int y = 0; y < size; y++) {
 			int ya = y + yp - size / 2;
 			for (int x = 0; x < size; x++) {
 				int xa = x + xp - size / 2;
-				if (xa < 0 || ya < 0 || xa >= WIDTH || ya >= HEIGHT);
+				if (xa < 0 || ya < 0 || xa >= width || ya >= height);
 				else if (Math.abs((xa - xp)*(xa - xp) + (ya - yp)*(ya - yp)) < size * size / 4 + 2) {
-					if(pixels.get(imageid)[xa + ya*WIDTH] != color) {
-						pixels.get(imageid)[xa + ya*WIDTH] = color;
+					if(image.getPixel(xa, ya) != color) {
+						image.setPixel(xa, ya, color);
 					}
 				}
 			}
@@ -43,99 +50,63 @@ public class PaintServer {
 	}
 	
 	ArrayList<Point> queue = new ArrayList<>();
-	public void floodFill(int x, int y, int targetColor, int color, int imageid) {
-		int WIDTH = size.get(imageid)[0];
-		int HEIGHT = size.get(imageid)[0];
+	public void floodFill(int x, int y, int targetColor, int color, int uuid) {
+		Image image = getImage(uuid);
+		int width = image.width;
+		int height = image.height;
 		if(queue.size()>0) queue.remove(0);
-		while(y > 0 && getPixel(x, y-1, imageid) == targetColor) {
+		while(y > 0 && image.getPixel(x, y-1) == targetColor) {
 			y--;
 		}
 		boolean left = false, right = false;
-		while(y < HEIGHT && getPixel(x, y, imageid) == targetColor) {
-			setPixel(x,y, color, imageid);
+		while(y < height && image.getPixel(x, y) == targetColor) {
+			image.setPixel(x,y, color);
 			
-			if(!left && x > 0 && getPixel(x-1, y, imageid) == targetColor) {
+			if(!left && x > 0 && image.getPixel(x-1, y) == targetColor) {
 				int ytemp = y;
-				while(ytemp > 0 && getPixel(x-1, ytemp-1, imageid) == targetColor) {
+				while(ytemp > 0 && image.getPixel(x-1, ytemp-1) == targetColor) {
 					ytemp--;
 				}
 				queue.add(new Point(x-1, ytemp));
 				left = true;
-			} else if(left && x > 0 && getPixel(x-1, y, imageid) != targetColor) left = false;
-			if(!right && x < WIDTH - 1 && getPixel(x+1, y, imageid) == targetColor) {
+			} else if(left && x > 0 && image.getPixel(x-1, y) != targetColor) left = false;
+			if(!right && x < width - 1 && image.getPixel(x+1, y) == targetColor) {
 				int ytemp = y;
-				while(ytemp > 0 && getPixel(x+1, ytemp-1, imageid) == targetColor) {
+				while(ytemp > 0 && image.getPixel(x+1, ytemp-1) == targetColor) {
 					ytemp--;
 				}
 				queue.add(new Point(x+1, ytemp));
 				right = true;
-			} else if(right && x < WIDTH - 1 && getPixel(x+1, y, imageid) != targetColor) right = false;
+			} else if(right && x < width - 1 && image.getPixel(x+1, y) != targetColor) right = false;
 			
 			
 			y++;
 		}
 		if(queue.size()>0)
-		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, imageid);
-	}
-//	public void floodFill(int x, int y, int targetColor, int color, int imageid) {
-//		int WIDTH = this.size.get(imageid)[0];
-//		int HEIGHT = this.size.get(imageid)[1];
-//		if(queue.size()>0) queue.remove(0);
-//		while(y > 0 && pixels.get(imageid)[x + (y-1)*WIDTH] == targetColor) {
-//			y--;
-//		}
-//		while(y < HEIGHT && pixels.get(imageid)[x + (y)*WIDTH] == targetColor) {
-//			pixels.get(imageid)[x + y * WIDTH] = color;
-//			if(pixels.get(imageid)[x-1 + y*WIDTH] == targetColor) {
-//				int ytemp = y;
-//				while(pixels.get(imageid)[(x-1) + (ytemp-1)*WIDTH] == targetColor) {
-//					ytemp--;
-//				}
-//				queue.add(new Point(x-1, ytemp));				
-//			}
-//			if(pixels.get(imageid)[x+1 + y*WIDTH] == targetColor) {
-//				int ytemp = y;
-//				while(pixels.get(imageid)[(x+1) + (ytemp-1)*WIDTH] == targetColor) {
-//					ytemp--;
-//				}
-//				queue.add(new Point(x+1, ytemp));				
-//			}
-//			y++;
-//		}
-//		
-//		if(queue.size()>0)
-//		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, imageid);
-//	}
-	
-	private int getPixel(int x, int y, int imageid) {
-		return pixels.get(imageid)[x+y*size.get(imageid)[0]];
+		floodFill(queue.get(0).x, queue.get(0).y, targetColor, color, uuid);
 	}
 	
-	private void setPixel(int x, int y, int color, int imageid) {
-		pixels.get(imageid)[x+y*size.get(imageid)[0]] = color;
+	public void addImage(int width, int height, int uuid) {
+		images.add(new Image(width, height, uuid));
 	}
-
-	public void init(int imageid) {
-		for (int i = 0; i < pixels.get(imageid).length; i++) {
-			pixels.get(imageid)[i] = 0x00ffffff;
+	
+	public void removeImage(int uuid) {
+		Image img = getImage(uuid);
+		if(img == null) return;
+		images.remove(img);
+	}
+	
+	public Image getImage(int UUID) {
+		for(Image img : images) {
+			if(img.UUID == UUID) return img;
 		}
+		return null;
 	}
 	
-	public void addImage(int width, int height) {
-		pixels.add(new int[width*height]);
-		size.add(new int[]{width,height});
-	}
-	
-	public void removeImage(int id) {
-		if(pixels.size() <= id) return;
-		pixels.remove(id);
-		size.remove(id);
-	}
-	
-	public void drawLine(int x0, int y0, int xf, int yf, int size, int color, int imageid) {
+	public void drawLine(int x0, int y0, int xf, int yf, int size, int color, int uuid) {
 		for(int x = x0; x < xf;  x++) {
 			int y = Math.round(y0 + (yf - y0)/(xf - x0)*x);
-			pencil(x, y, size, color, imageid);
+			pencil(x, y, size, color, uuid);
 		}
 	}
 }

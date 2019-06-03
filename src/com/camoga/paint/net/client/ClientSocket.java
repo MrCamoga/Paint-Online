@@ -20,7 +20,6 @@ import com.camoga.paint.net.packets.Packet;
 import com.camoga.paint.net.packets.Packet.PacketTypes;
 import com.camoga.paint.net.packets.Packet00Login;
 import com.camoga.paint.net.packets.Packet01Paint;
-import com.camoga.paint.net.packets.Packet02Startup;
 import com.camoga.paint.net.packets.Packet03PixelArray;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 import com.camoga.paint.net.packets.Packet05Disconnect;
@@ -113,7 +112,8 @@ public class ClientSocket extends Thread {
 			packet = new Packet08NewImage(data);
 			int width = ((Packet08NewImage) packet).getWidth();
 			int height = ((Packet08NewImage) packet).getHeight();
-			paint.init(width, height, ((Packet08NewImage) packet).getId());
+			int uuid = ((Packet08NewImage) packet).getUUID();
+			paint.init(width, height, uuid);
 			paint.start();
 			break;
 		case ERROR:
@@ -134,7 +134,6 @@ public class ClientSocket extends Thread {
 				loginPacket.writeData(this);
 				return;
 			} else {
-				//DONE add warning: wrong password
 				JOptionPane.showMessageDialog(Window.window, new JLabel("The password is wrong"), "Wrong password!", JOptionPane.ERROR_MESSAGE);
 				PaintMain.main.disconnect(paint);
 			}
@@ -143,20 +142,19 @@ public class ClientSocket extends Thread {
 			packet = new Packet12DeleteImage(data);
 			int i = JOptionPane.showConfirmDialog(paint, "An user has deleted an image, Would you like to save it? If you don't, you won't be able to recover it", "Image deleted", JOptionPane.ERROR_MESSAGE);
 			if (i == JOptionPane.OK_OPTION) {
-				Utils.saveImage(((Packet12DeleteImage)packet).getId());
+				Utils.saveImage(paint.getImage(((Packet12DeleteImage) packet).getUUID()));
 			}
-			paint.removeImage(((Packet12DeleteImage)packet).getId());
+			paint.removeImage(((Packet12DeleteImage)packet).getUUID());
 			
 			break;
 		case CURSOR:
-			//DONE add circle of drawing area
 			packet = new Packet13Cursor(data);
 			String username = ((Packet13Cursor) packet).getUsername();
 			int x = ((Packet13Cursor) packet).getX();
 			int y = ((Packet13Cursor) packet).getY();
 			int tool = ((Packet13Cursor) packet).getTool();
-			int imageid = ((Packet13Cursor) packet).getImageId();
-			paint.updateCursor(username, x, y, tool, imageid);
+			uuid = ((Packet13Cursor) packet).getUUID();
+			paint.updateCursor(username, x, y, tool, uuid);
 			break;
 		}
 	}
@@ -171,20 +169,20 @@ public class ClientSocket extends Thread {
 	}
 	
 	public void handlePixelArray(Packet03PixelArray packet) {
-		paint.imagepacket(packet.getPixels(), packet.getNum(), packet.getImageId());
+		paint.imagepacket(packet.getPixels(), packet.getNum(), packet.getUUID());
 	}
 	
 	public void handlePaint(Packet01Paint packet) {
-		paint.pencil(packet.getX(), packet.getY(), packet.getSize(), packet.getColor(), packet.getImage());
+		paint.pencil(packet.getX(), packet.getY(), packet.getSize(), packet.getColor(), packet.getUUID());
 	}
 	
 	public void handleFillBucket(Packet07FillBucket packet) {
 		int x = packet.getX();
 		int y = packet.getY();
-		int imageid = packet.getImage();
-		int target = paint.image.get(imageid).getPixel(x,y);
+		int uuid = packet.getUUID();
+		int target = paint.getImage(uuid).getPixel(x,y);
 		int color = packet.getColor();
-		paint.floodFill(x, y, target, color, imageid);
+		paint.floodFill(x, y, target, color, uuid);
 	}
 	
 	public void handleChat(Packet06Chat packet) {

@@ -10,12 +10,12 @@ import javax.swing.JFileChooser;
 import com.camoga.paint.gui.Window;
 
 public class Utils {
-	public static void saveImage(int id) {
+	public static void saveImage(Image image) {
 		try {
 			JFileChooser filechooser = new JFileChooser();
-			int i = filechooser.showOpenDialog(Window.window);
+			int i = filechooser.showSaveDialog(Window.window);
 			if(i == JFileChooser.APPROVE_OPTION)
-			ImageIO.write((ServerManager.currentsc.image.get(id)).getBufferedImage(), "PNG", filechooser.getSelectedFile());
+			ImageIO.write(image.getBufferedImage(), "PNG", filechooser.getSelectedFile());
 		} catch (IOException e1) {
 			e1.printStackTrace();
 		}

@@ -1,14 +1,12 @@
 package com.camoga.paint.net.packets;
 
-import java.nio.ByteBuffer;
-
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet07FillBucket extends Packet {
 
 	//TODO fusionar con paint (tool)
-	private int x, y, color, id;
+	private int x, y, color, uuid;
 
 	public Packet07FillBucket(byte[] data) {
 		super(07);
@@ -16,15 +14,15 @@ public class Packet07FillBucket extends Packet {
 		x = s.get();
 		y = s.get();
 		color = s.getInt();
-		id = s.get();
+		uuid = s.getInt();
 	}
 
-	public Packet07FillBucket(int x, int y, int color, int id) {
+	public Packet07FillBucket(int x, int y, int color, int uuid) {
 		super(07);
 		this.x = x;
 		this.y = y;
 		this.color = color;
-		this.id = id;
+		this.uuid = uuid;
 	}
 
 	public void writeData(ClientSocket client) {
@@ -36,7 +34,7 @@ public class Packet07FillBucket extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(8).put(7).put(x).put(y).putInt(color).put(id).array();
+		return Serialize.allocate(11).put(7).put(x).put(y).putInt(color).putInt(uuid).array();
 	}
 	
 	public int getX() {
@@ -51,7 +49,7 @@ public class Packet07FillBucket extends Packet {
 		return color;
 	}
 
-	public int getImage() {
-		return id;
+	public int getUUID() {
+		return uuid;
 	}
 }

@@ -17,6 +17,7 @@ import javax.xml.parsers.DocumentBuilderFactory;
 import org.w3c.dom.Document;
 
 import com.camoga.paint.ClientMP;
+import com.camoga.paint.Image;
 import com.camoga.paint.Utils;
 import com.camoga.paint.checkver.Check;
 import com.camoga.paint.net.packets.Packet05Disconnect;
@@ -81,33 +82,34 @@ public class Console implements ActionListener {
 				break;
 			case "/save":
 				try {
-					Utils.saveImage(Integer.parseInt(params[1]));
+					Utils.saveImage(server.paint.images.get(Integer.parseInt(params[1])));
 				} catch (NumberFormatException e) {
 					print("image id must be a number");
 					return;
 				}
 				break;
-			//DONE view command
 			case "/view":
 				if (GraphicsEnvironment.isHeadless())
 					print("Cannot connect to window server");
 				else {
 					try {
-					final int imageid = Integer.parseInt(params[1]);
-						if (server.paint.pixels.size() <= imageid)
+					final int index = Integer.parseInt(params[1]);
+						if (server.paint.images.size() <= index)
 							return;
 						
-						final int[] size = server.paint.size.get(imageid);
+						Image img = server.paint.images.get(index);
+						final int width = img.width;
+						final int height = img.height;
 						
-						JFrame view = new JFrame("Image " + imageid + " visualization") {
-							BufferedImage image = new BufferedImage(size[0], size[1], BufferedImage.TYPE_INT_RGB);
+						JFrame view = new JFrame("Image " + index + " visualization") {
+							BufferedImage image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
 							int[] pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 							
 							public void paint(Graphics g) {
 								super.paint(g);
 								setSize(640, 640);
 								for (int i = 0; i < pixels.length; i++) {
-									pixels[i] = server.paint.pixels.get(imageid)[i];
+									pixels[i] = img.getPixel(i);
 								}
 								g.drawImage(image, 20, 40, getContentPane().getWidth(), getContentPane().getHeight(), null);
 								g.dispose();
@@ -192,14 +194,14 @@ public class Console implements ActionListener {
 	//TODO /help xml
 	public void help(String[] params) {
 		print("/admin <add>/<remove> <username> /Adds or removes that username from the admins\n" + 
-				"/delete <imageid> //Deletes the image with that id\n" + 
+				"/delete <index> //Deletes the image with that index\n" + 
 				"/list \n" + 
 				"   admin //Shows every admin in the server\n" + 
 				"   client //Shows every client connected\n" + 
 				"/password <password> //Sets the password to <password>\n" + 
 				"/state //Shows the state of the server (clients connected, memory usage,...)\n" + 
 				"/update <filename> //filename of this program\n" + 
-				"/view <imageid> //Creates a view of the image\n\n");
+				"/view <index> //Creates a view of the image\n\n");
 		Document xml = null;
 		try {
 			DocumentBuilder doc = DocumentBuilderFactory.newInstance().newDocumentBuilder();
