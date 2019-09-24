@@ -20,8 +20,8 @@ public class PaintMain extends Thread {
 	public static PaintMain main;
 	
 	public static void main(String[] args) throws UnknownHostException {
-//		new PaintMain("localhost", "null", "MrCamoga" + new Random().nextInt(1000));
-		new PaintMain().start();
+		new PaintMain("localhost", "null", "MrCamoga" + new Random().nextInt(1000));
+//		new PaintMain().start();
 	}
 	
 	public PaintMain() {
