@@ -6,6 +6,7 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
+import java.util.Optional;
 
 import javax.swing.JLabel;
 import javax.swing.JOptionPane;
@@ -30,6 +31,10 @@ import com.camoga.paint.net.packets.Packet10Version;
 import com.camoga.paint.net.packets.Packet11Password;
 import com.camoga.paint.net.packets.Packet12DeleteImage;
 import com.camoga.paint.net.packets.Packet13Cursor;
+
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 
 public class ClientSocket extends Thread {
 	
@@ -60,7 +65,10 @@ public class ClientSocket extends Thread {
 			try {
 				socket.receive(packet);
 			} catch (SocketTimeoutException e) {
-				JOptionPane.showMessageDialog(this.paint, "Connection refused", "A connection error has ocurred", JOptionPane.ERROR_MESSAGE);
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Connection refused");
+				alert.setHeaderText("A connection error has ocurred");
+				alert.showAndWait();
 				System.exit(1);
 			} catch (IOException e) {
 				e.printStackTrace();
@@ -123,8 +131,11 @@ public class ClientSocket extends Thread {
 		case VERSION:
 			packet = new Packet10Version(data);
 			if(!PaintMain.main.version.equals(((Packet10Version) packet).getVersion())) {
-				int i = JOptionPane.showConfirmDialog(paint, "You have a version discordance with the server \n Your version: " + PaintMain.main.version + "\n Server version" + ((Packet10Version) packet).getVersion() + ".\n Do you want to continue running the client? This may cause serious issues!", "ERROR! Version discordance", JOptionPane.YES_NO_CANCEL_OPTION);
-				if(i == JOptionPane.CANCEL_OPTION || i == JOptionPane.NO_OPTION) PaintMain.main.disconnect(paint);
+				Alert alert = new Alert(AlertType.CONFIRMATION);
+				alert.setTitle("Different version");
+				alert.setHeaderText("You and server have different versions \n Your version: " + PaintMain.main.version + "\n Server version" + ((Packet10Version) packet).getVersion() + ".\n Do you want to continue running the client? This may cause issues!");
+				
+				if(alert.showAndWait().get() != ButtonType.OK) PaintMain.main.disconnect(paint);
 			}
 			break;
 		case PASSWORD:
@@ -134,18 +145,20 @@ public class ClientSocket extends Thread {
 				loginPacket.writeData(this);
 				return;
 			} else {
-				JOptionPane.showMessageDialog(Window.window, new JLabel("The password is wrong"), "Wrong password!", JOptionPane.ERROR_MESSAGE);
+				Alert alert = new Alert(AlertType.ERROR);
+				alert.setTitle("Wrong password!");
+				alert.setHeaderText("The password is wrong");
+				alert.show();
 				PaintMain.main.disconnect(paint);
 			}
 			break;
 		case DELETEIMAGE:
 			packet = new Packet12DeleteImage(data);
-			int i = JOptionPane.showConfirmDialog(paint, "An user has deleted an image, Would you like to save it? If you don't, you won't be able to recover it", "Image deleted", JOptionPane.ERROR_MESSAGE);
-			if (i == JOptionPane.OK_OPTION) {
-				Utils.saveImage(paint.getImage(((Packet12DeleteImage) packet).getUUID()));
-			}
+			Alert alert = new Alert(AlertType.CONFIRMATION);
+			alert.setTitle("Image deleted!");
+			alert.setHeaderText("An admin has deleted an image, Would you like to save it? If you don't, you won't be able to recover it");
+			if(alert.showAndWait().get() == ButtonType.OK) Utils.saveImage(paint.getImage(((Packet12DeleteImage) packet).getUUID()));
 			paint.removeImage(((Packet12DeleteImage)packet).getUUID());
-			
 			break;
 		case CURSOR:
 			packet = new Packet13Cursor(data);

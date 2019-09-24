@@ -1,51 +1,25 @@
 package com.camoga.paint.gui.menus;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-import java.net.UnknownHostException;
-
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
-import javax.swing.JSeparator;
-
 import com.camoga.paint.PaintMain;
 import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
-import com.camoga.paint.gui.Window;
 
-public class ServerMenu extends JMenu implements ActionListener {
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SeparatorMenuItem;
+
+public class ServerMenu extends Menu {
 	public ServerMenu(String text) {
 		super(text);
-		JMenuItem connect = new JMenuItem("Connect to server");
-		JMenuItem disconnect = new JMenuItem("Disconnect from server");
-		JSeparator splitter = new JSeparator();
-		JMenuItem offline = new JMenuItem("Work offline");
-		connect.addActionListener(this);
-		disconnect.addActionListener(this);
-		offline.addActionListener(this);
-		add(connect);
-		add(disconnect);
-		add(splitter);
-		add(offline);
-	}
-
-	public void actionPerformed(ActionEvent e) {
-		switch (e.getActionCommand()) {
-			case "Work offline":
-				break;
-			case "Disconnect from server":
-				ServerClient current = ServerManager.currentsc;
-				if(PaintMain.main.disconnect(current)) ServerManager.clients.remove(current);
-				System.out.println(ServerManager.clients.size() + " servers");
-				ServerManager.setCurrent(Window.window.serverTabs.getSelectedIndex());
-				break;
-			case "Connect to server":
-				try {
-					PaintMain.main.loginPanel();
-				} catch (UnknownHostException e1) {
-					e1.printStackTrace();
-				}
-				break;
-		}
+		MenuItem connect = new MenuItem("Connect to server");
+		MenuItem disconnect = new MenuItem("Disconnect from server");
+		MenuItem offline = new MenuItem("Work offline");
+		connect.setOnAction(e -> PaintMain.main.loginPanel());
+		disconnect.setOnAction(e -> {
+			ServerClient current = ServerManager.currentsc;
+			if(PaintMain.main.disconnect(current)) ServerManager.clients.remove(current);
+		});
+//		offline.setOnAction(this);
+		getItems().addAll(connect, disconnect, new SeparatorMenuItem(), offline);
 	}
 }

@@ -11,11 +11,7 @@ import java.awt.event.ActionListener;
 import java.awt.image.BufferStrategy;
 import java.awt.image.BufferedImage;
 
-import javax.swing.GroupLayout;
 import javax.swing.JButton;
-import javax.swing.JLabel;
-import javax.swing.JPanel;
-import javax.swing.JSlider;
 import javax.swing.UIManager;
 import javax.swing.event.ChangeEvent;
 import javax.swing.event.ChangeListener;
@@ -27,22 +23,27 @@ import com.camoga.paint.gui.Window;
 import com.camoga.paint.gui.elements.Cursor;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 
-public class PaintPanel extends JPanel {
+import javafx.scene.control.Button;
+import javafx.scene.control.Label;
+import javafx.scene.control.Slider;
+import javafx.scene.layout.Pane;
+
+public class PaintPanel extends Pane {
 	private ServerClient sc;
 	//TODO selections
 	public int[] pixelsSelected;
-	public JButton[] colors;
-	public JButton[] recent;
+	public Button[] colors;
+	public Button[] recent;
 
-	public JButton colorPicked;
+	public Button colorPicked;
 
-	public JSlider slider = new JSlider(0, 1, 100, 2);
-	public JLabel brushSize = new JLabel("2");
+	public Slider slider = new Slider(1, 100, 2);
+	public Label brushSize = new Label("2");
 
-	public JButton pencil;
-	public JButton bucket;
-	public JButton rubber;
-	public JButton colorpicker;
+	public Button pencil;
+	public Button bucket;
+	public Button rubber;
+	public Button colorpicker;
 
 	public Canvas canvas;
 	public Image image;
@@ -53,7 +54,7 @@ public class PaintPanel extends JPanel {
 	public PaintPanel(final ServerClient sc) {
 		this.sc = sc;
 
-		setLayout(new GroupLayout(this));
+//		setLayout(new GroupLayout(this));
 
 		canvas = new Canvas();
 		canvas.setBounds(0, 0, 450, 450);
@@ -62,7 +63,7 @@ public class PaintPanel extends JPanel {
 		canvas.addMouseWheelListener(Window.window.mouse);
 		canvas.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(1, 1, 2), new Point(0, 0),
 				"transparent"));
-		add(canvas);
+		getChildren().add(canvas);
 		slider.setBounds(20, 512, 100, 40);
 		slider.addChangeListener(new ChangeListener() {
 			public void stateChanged(ChangeEvent e) {
@@ -78,7 +79,7 @@ public class PaintPanel extends JPanel {
 
 		palette(3,2,3);
 		recentColors(10, 10);
-		colorPicked = new JButton();
+		colorPicked = new Button();
 		colorPicked.setBounds(200, 512, 100, 100);
 		colorPicked.setEnabled(false);
 		colorPicked.setFocusPainted(false);
@@ -120,14 +121,14 @@ public class PaintPanel extends JPanel {
 
 	public void palette(int red, int green, int blue) {
 		if(colors != null) {
-			for(JButton button : colors) {
+			for(Button button : colors) {
 				remove(button);
 			}
 			//TODO update jframe
 		}
 		int buttonSize = 12;
 		int noc = 1<<(red+green+blue);
-		colors = new JButton[noc];
+		colors = new Button[noc];
 		int width = 8 * (1 << green);
 		int height = (1 << red + blue) / width;
 		for (int i = 0; i < colors.length; i++) {
@@ -159,10 +160,6 @@ public class PaintPanel extends JPanel {
 			});
 			add(colors[i]);
 		}
-
-		
-		revalidate();
-		repaint();
 	}
 
 	public void changeColor(int color) {

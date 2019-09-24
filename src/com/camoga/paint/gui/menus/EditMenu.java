@@ -4,37 +4,30 @@ import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
 
-import javax.swing.JMenu;
-import javax.swing.JMenuItem;
 import javax.swing.KeyStroke;
 
-public class EditMenu extends JMenu implements ActionListener {
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuItem;
+
+public class EditMenu extends Menu {
 	public EditMenu(String text) {
 		super(text);
 
-		JMenuItem undo = new JMenuItem("Undo");
-		JMenuItem redo = new JMenuItem("Redo");
-		JMenuItem copy = new JMenuItem("Copy");
-		JMenuItem cut = new JMenuItem("Cut");
-		JMenuItem paste = new JMenuItem("Paste");
-		undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, 2));
-		redo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, 2));
-		copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, 2));
-		cut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, 2));
-		paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, 2));
-		undo.addActionListener(this);
-		redo.addActionListener(this);
-		copy.addActionListener(this);
-		cut.addActionListener(this);
-		paste.addActionListener(this);
-		add(undo);
-		add(redo);
-		add(copy);
-		add(cut);
-		add(paste);
-	}
-
-	public void actionPerformed(ActionEvent e) {
-		//TODO edit menu
+		MenuItem undo = new MenuItem("Undo");
+		MenuItem redo = new MenuItem("Redo");
+		MenuItem copy = new MenuItem("Copy");
+		MenuItem cut = new MenuItem("Cut");
+		MenuItem paste = new MenuItem("Paste");
+//		undo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Z, 2));
+//		redo.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_Y, 2));
+//		copy.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_C, 2));
+//		cut.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_X, 2));
+//		paste.setAccelerator(KeyStroke.getKeyStroke(KeyEvent.VK_V, 2));
+//		undo.setOnAction(value);
+//		redo.setOnAction(value);
+//		copy.setOnAction(value);
+//		cut.setOnAction(value);
+//		paste.setOnAction(value);
+		getItems().addAll(undo, redo, copy, cut, paste);
 	}
 }

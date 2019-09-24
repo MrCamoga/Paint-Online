@@ -36,23 +36,26 @@ public class PaintMain extends Thread {
 		login(server, pass, username);		
 	}
 	
-	public void loginPanel() throws UnknownHostException {
-		LoginFrame panel = new LoginFrame();
-		String[] data = panel.login();
+	public void loginPanel() {
+		String[] data = LoginFrame.login();
 		if(data == null) return;
 		login(data[0], data[1], data[2]);
 	}
 	
-	public void login(String ip, String pass, String username) throws UnknownHostException {
-		ClientSocket socketClient = new ClientSocket(InetAddress.getByName(ip), new Client(username));
-		socketClient.start();
-		
-		ServerManager.addServer(socketClient);
-		Packet11Password passwordPacket = new Packet11Password(pass, false);
-		passwordPacket.writeData(socketClient);
-		
-		Packet10Version versionPacket = new Packet10Version(version);
-		versionPacket.writeData(socketClient);
+	public void login(String ip, String pass, String username) {
+		try {
+			ClientSocket socketClient = new ClientSocket(InetAddress.getByName(ip), new Client(username));
+			socketClient.start();
+			
+			ServerManager.addServer(socketClient);
+			Packet11Password passwordPacket = new Packet11Password(pass, false);
+			passwordPacket.writeData(socketClient);
+			
+			Packet10Version versionPacket = new Packet10Version(version);
+			versionPacket.writeData(socketClient);			
+		} catch(UnknownHostException e) {
+			e.printStackTrace();
+		}
 	}
 	
 	public void disconnectAll() {

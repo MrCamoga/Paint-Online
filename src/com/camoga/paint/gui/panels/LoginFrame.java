@@ -1,37 +1,55 @@
 package com.camoga.paint.gui.panels;
 
-import java.awt.GridLayout;
+import javafx.geometry.Insets;
+import javafx.scene.Node;
+import javafx.scene.control.ButtonBar.ButtonData;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.GridPane;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTextField;
+public class LoginFrame {
+	public static String[] login() {
+		Dialog<?> dialog = new Dialog<>();
+		dialog.setTitle("Connect to server");
+		
+		ButtonType loginbuttontype = new ButtonType("Login", ButtonData.OK_DONE);
+		dialog.getDialogPane().getButtonTypes().add(loginbuttontype);
+		
+		GridPane grid = new GridPane();
+		grid.setHgap(10);
+		grid.setVgap(10);
+		grid.setPadding(new Insets(20, 150, 10, 10));
 
-import com.camoga.paint.gui.Window;
-
-public class LoginFrame extends JPanel {
-	private JTextField address = new JTextField();
-	private JTextField password = new JTextField();
-	private JTextField username = new JTextField();
-
-	public LoginFrame() {
-		super(new GridLayout(3, 2, 5, 8));
-		JLabel lblIp = new JLabel("IP Address");
-		JLabel lblPass = new JLabel("Server Password");
-		JLabel lblUser = new JLabel("Username");
-		add(lblIp);
-		add(this.address);
-		add(lblPass);
-		add(this.password);
-		add(lblUser);
-		add(this.username);
-	}
-
-	public String[] login() {
-		int result = JOptionPane.showConfirmDialog(Window.window, this, "Login", 2);
-		if ((result == 2) || (result == -1)) {
+		TextField address = new TextField();
+		TextField password = new TextField();
+		TextField username = new TextField();
+		grid.add(new Label("IP Address: "), 0,0);
+		grid.add(new Label("Password: "), 0,1);
+		grid.add(new Label("Username: "), 0,2);
+		grid.add(address, 1,0);
+		grid.add(password, 1,1);
+		grid.add(username, 1,2);
+		
+		Node loginbutton = dialog.getDialogPane().lookupButton(loginbuttontype);
+		loginbutton.setDisable(true);
+		
+		username.textProperty().addListener((observable, oldValue, newValue) -> {
+		    loginbutton.setDisable(newValue.trim().isEmpty());
+		});
+		
+		
+		dialog.getDialogPane().setContent(grid);
+		
+		boolean[] ok = new boolean[1];
+		dialog.setResultConverter(d -> {
+			if(d == loginbuttontype) ok[0] = true;
 			return null;
-		}
-		return new String[] { this.address.getText(), this.password.getText(), this.username.getText() };
+		});
+		
+		if(!ok[0]) return null;
+		return new String[] {address.getText(), password.getText(),username.getText()};
+		
 	}
 }

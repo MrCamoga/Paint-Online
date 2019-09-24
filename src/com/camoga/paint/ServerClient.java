@@ -6,9 +6,6 @@ import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-
 import com.camoga.paint.gui.Window;
 import com.camoga.paint.gui.elements.Cursor;
 import com.camoga.paint.gui.panels.Chat;
@@ -19,8 +16,12 @@ import com.camoga.paint.net.packets.Packet03PixelArray;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 import com.camoga.paint.net.packets.Packet07FillBucket;
 
+import javafx.scene.control.Tab;
+import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
+
 //FIXME if client connected to same server from two tabs, he'll draw from the two tabs simultaneously
-public class ServerClient extends JPanel implements Runnable {
+public class ServerClient extends BorderPane implements Runnable {
 	public static enum Tool {
 		PENCIL(0), BUCKET(1), RUBBER(2), PICKCOLOR(3), BRUSH(4), RECTSEL(5), ELIPSEL(6), COLORSEL(7);
 
@@ -41,7 +42,7 @@ public class ServerClient extends JPanel implements Runnable {
 	public Chat chat;
 	public boolean running;
 	public Thread thread;
-	public JTabbedPane tabImages = new JTabbedPane();
+	public TabPane tabImages = new TabPane();
 	
 	public ClientSocket socketClient;
 
@@ -51,10 +52,9 @@ public class ServerClient extends JPanel implements Runnable {
 
 	public ServerClient(ClientSocket socket) {
 		socketClient = socket;
-		setLayout(new BorderLayout());
 		chat = new Chat();
-		add(tabImages);
-		add(chat, BorderLayout.EAST);
+		setTop(tabImages);
+		setRight(chat);
 	}
 
 	public void init(int width, int height, int UUID) {
@@ -69,7 +69,7 @@ public class ServerClient extends JPanel implements Runnable {
 		for (int i = 0; i < img.getPixels().length; i++) {
 			img.setPixel(i, 0xffffff);
 		}
-		tabImages.addTab(UUID + "", pp);
+		tabImages.getTabs().add(new Tab(UUID+"", pp));
 	}
 
 	public void run() {
@@ -80,7 +80,7 @@ public class ServerClient extends JPanel implements Runnable {
 //			System.out.println(Window.window.serverTabs.getSelectedIndex());
 //			System.out.println(getCurrentPP().image.UUID);
 //			System.out.println(ServerManager.currentsc.socketClient.getAddress().getHostAddress());
-			if (Window.window.serverTabs.getTitleAt(Window.window.serverTabs.getSelectedIndex()).equals(socketClient.getAddress().getHostAddress())) {
+			if (Window.window.serverTabs.getSelectionModel().getSelectedItem().getText().equals(socketClient.getAddress().getHostAddress())) {
 				long now = System.nanoTime();
 				delta += (now - last) / ns;
 				last = now;
@@ -175,11 +175,9 @@ public class ServerClient extends JPanel implements Runnable {
 	}
 	
 	public void render() {
-		if(tabImages.getSelectedIndex() < paintpanels.size() && tabImages.getSelectedIndex() >= 0) {
-//			System.out.println(tabImages.getSelectedIndex());
+//		if(tabImages.getSelectedIndex() < paintpanels.size() && tabImages.getSelectedIndex() >= 0) {
 			getCurrentPP().render();
-//			System.out.println(getCurrentPP().render);
-		}
+//		}
 	}
 
 	public void start() {
@@ -263,14 +261,7 @@ public class ServerClient extends JPanel implements Runnable {
 			i++;
 		}
 		paintpanels.remove(pp);
-		if(paintpanels.size() == 0) {
-			tabImages.removeAll();
-			System.out.println("remove all images");
-		} else {
-			if(i == 0) tabImages.setSelectedIndex(1);
-			else tabImages.setSelectedIndex(i-1);
-			tabImages.removeTabAt(i);
-		}
+		tabImages.getTabs().remove(tabImages.getSelectionModel().getSelectedIndex());
 
 	}
 
@@ -315,7 +306,7 @@ public class ServerClient extends JPanel implements Runnable {
 	}
 
 	public PaintPanel getCurrentPP() {
-		return paintpanels.get(tabImages.getSelectedIndex());
+		return paintpanels.get(tabImages.getSelectionModel().getSelectedIndex());
 	}
 	
 	public PaintPanel getPP(int uuid) {
@@ -327,10 +318,10 @@ public class ServerClient extends JPanel implements Runnable {
 	}
 
 	public Integer getCurrentImageUUID() {
-		if(tabImages.getSelectedIndex() < 0) return null;
+		if(tabImages.getSelectionModel().getSelectedIndex() < 0) return null;
 //		System.out.println(tabImages.getSelectedIndex());
 //		System.out.println(paintpanels.size());
-		int uuid = paintpanels.get(tabImages.getSelectedIndex()).image.UUID;
+		int uuid = paintpanels.get(tabImages.getSelectionModel().getSelectedIndex()).image.UUID;
 		return uuid;
 	}
 	

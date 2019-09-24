@@ -1,21 +1,5 @@
 package com.camoga.paint.gui;
 
-import java.awt.BorderLayout;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
-
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JTabbedPane;
-import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
-
 import com.camoga.paint.PaintMain;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.events.MouseHandler;
@@ -26,78 +10,72 @@ import com.camoga.paint.gui.menus.PaletteMenu;
 import com.camoga.paint.gui.menus.ServerMenu;
 import com.camoga.paint.gui.menus.ToolMenu;
 
-public class Window extends JFrame {
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.TabPane;
+import javafx.scene.layout.BorderPane;
+import javafx.stage.Stage;
+
+public class Window extends Application {
 	public MouseHandler mouse = new MouseHandler(this);
 
-	public JTabbedPane serverTabs;
+	public TabPane serverTabs;
 	public static Window window;
 
 	public Window(PaintMain main) {
-		super("Paint Online by MrCamoga " + PaintMain.main.version);
+
+//		serverTabs.addChangeListener(new ChangeListener() {
+//			public void stateChanged(ChangeEvent e) {
+//				ServerManager.setCurrent(serverTabs.getSelectedIndex());
+//			}
+//		});
+//		add(serverTabs);
+//		pack();
+//		setSize(1300, 780);
+//		setLocationRelativeTo(null);
+//		setResizable(true);
+//		setVisible(true);
+	}
+
+	public void start(Stage primaryStage) throws Exception {
 		window = this;
-		getRootPane().setWindowDecorationStyle(0);
-		setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
-		setLayout(new BorderLayout());
-		try {
-			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		addWindowListener(new WindowAdapter() {
-			public void windowClosing(WindowEvent e) {
-				if(ServerManager.clients.size() > 0) {
-					int i = JOptionPane.showConfirmDialog(Window.window, "Are you sure you want to disconnect from all servers?");
-					if(i==JOptionPane.OK_OPTION) PaintMain.main.disconnectAll();					
-				} else {
-					System.exit(0);
+		BorderPane root = new BorderPane();
+		Scene scene = new Scene(root, 1300, 780);
+		
+
+		serverTabs = new TabPane();
+
+		MenuBar menuBar = new MenuBar();
+		Menu server = new ServerMenu("Server");
+		Menu file = new FileMenu("File");
+		Menu edit = new EditMenu("Edit");
+		Menu image = new ImageMenu("Image");
+		Menu tools = new ToolMenu("Tools");
+		Menu palette = new PaletteMenu("Pallete");
+		
+		menuBar.getMenus().addAll(server,file,edit,image,tools,palette);
+		
+		
+		Platform.setImplicitExit(false);
+		primaryStage.setOnCloseRequest(e -> {
+			if(ServerManager.clients.size() > 0) {
+				Alert alert = new Alert(AlertType.CONFIRMATION);
+				alert.setContentText("Are you sure you want to disconnect from all servers?");
+				if(alert.showAndWait().get() == ButtonType.OK) {
+					PaintMain.main.disconnectAll();
 				}
-			}
-
-		});
-		serverTabs = new JTabbedPane();
-		JPanel north = new JPanel(new BorderLayout());
-
-		JMenuBar menuBar = new JMenuBar();
-		JMenu server = new ServerMenu("Server");
-		JMenu file = new FileMenu("File");
-		JMenu edit = new EditMenu("Edit");
-		JMenu image = new ImageMenu("Image");
-		JMenu tools = new ToolMenu("Tools");
-		JMenu palette = new PaletteMenu("Pallete");
-		JMenu help = new JMenu("Help");
-		JMenuItem todo = new JMenuItem("TO-DO");
-		todo.addActionListener((e)->{
-			JPanel p = new JPanel();
-			JOptionPane.showMessageDialog(null,
-					"capas\n" + 
-					"seleccionar (copiar, pegar etc)\n" + 
-					"zoom\n" + 
-					"cubo de pintura\n" + 
-					"paletas chulas\n"
-					+ "");});
-		help.add(todo);
-		menuBar.add(server);
-		menuBar.add(file);
-		menuBar.add(edit);
-		menuBar.add(image);
-		menuBar.add(tools);
-		menuBar.add(palette);
-		menuBar.add(help);
-
-		north.add(menuBar, BorderLayout.NORTH);
-
-		serverTabs.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				ServerManager.setCurrent(serverTabs.getSelectedIndex());
+			} else {
+				System.exit(0);
 			}
 		});
-		add(serverTabs);
-
-		add(north, BorderLayout.NORTH);
-		pack();
-		setSize(1300, 780);
-		setLocationRelativeTo(null);
-		setResizable(true);
-		setVisible(true);
+		primaryStage.setTitle("Paint Online by MrCamoga " + PaintMain.main.version);
+		primaryStage.setScene(scene);
+		primaryStage.show();
 	}
 }
