@@ -4,9 +4,13 @@ import java.awt.GridLayout;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.KeyEvent;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
 import java.util.Random;
 
+import javax.imageio.ImageIO;
 import javax.swing.Box;
+import javax.swing.JFileChooser;
 import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuItem;
@@ -16,11 +20,14 @@ import javax.swing.JSpinner;
 import javax.swing.KeyStroke;
 import javax.swing.SpinnerNumberModel;
 
+import com.camoga.paint.Image;
 import com.camoga.paint.PaintMain;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.Utils;
+import com.camoga.paint.net.packets.Packet03PixelArray;
 import com.camoga.paint.net.packets.Packet08NewImage;
 import com.camoga.paint.net.packets.Packet12DeleteImage;
+import com.camoga.paint.net.server.ServerSocket;
 
 public class FileMenu extends JMenu implements ActionListener {
 	public FileMenu(String text) {
@@ -75,6 +82,20 @@ public class FileMenu extends JMenu implements ActionListener {
 				}
 				break;
 			case "Open":
+				JFileChooser file = new JFileChooser();
+				int i = file.showOpenDialog(null);
+				if(i == JFileChooser.APPROVE_OPTION) {
+					try {
+						BufferedImage image = ImageIO.read(file.getSelectedFile());
+						Packet08NewImage newimage = new Packet08NewImage(image.getWidth(), image.getHeight(), new Random().nextInt());
+						newimage.writeData(ServerManager.currentsc.socketClient);
+						for(Packet03PixelArray p : Utils.sendImage(new Image(image.getRGB(0, 0, image.getWidth(), image.getHeight(), null, 0, image.getWidth()), newimage.getWidth(), newimage.getHeight(), newimage.getUUID()))) {
+							p.writeData(ServerManager.currentsc.socketClient);
+						}
+					} catch (IOException e1) {
+						e1.printStackTrace();
+					}
+				}
 				break;
 			case "Exit":
 				PaintMain.main.disconnectAll();

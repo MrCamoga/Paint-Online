@@ -8,7 +8,7 @@ public abstract class Packet {
 	public static enum PacketTypes {
 		INVALID(-1), LOGIN(00), PAINT(01),
 		@Deprecated STARTUP(02), PIXELARRAY(03), SELECTCOLOR(04),
-		DISCONNECT(05), CHAT(06), FILLBUCKET(07),
+		DISCONNECT(05), CHAT(06), @Deprecated FILLBUCKET(07),
 		NEWIMAGE(8), ERROR(9), VERSION(10),
 		PASSWORD(11), DELETEIMAGE(12), CURSOR(13);
 		

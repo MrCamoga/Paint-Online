@@ -6,7 +6,7 @@ import com.camoga.paint.net.server.ServerSocket;
 public class Packet07FillBucket extends Packet {
 
 	//TODO fusionar con paint (tool)
-	private int x, y, color, uuid;
+	private int x, y, color, tool, uuid;
 
 	public Packet07FillBucket(byte[] data) {
 		super(07);
@@ -14,14 +14,16 @@ public class Packet07FillBucket extends Packet {
 		x = s.get();
 		y = s.get();
 		color = s.getInt();
+		tool = s.get();
 		uuid = s.getInt();
 	}
 
-	public Packet07FillBucket(int x, int y, int color, int uuid) {
+	public Packet07FillBucket(int x, int y, int color, int tool, int uuid) {
 		super(07);
 		this.x = x;
 		this.y = y;
 		this.color = color;
+		this.tool = tool;
 		this.uuid = uuid;
 	}
 
@@ -34,7 +36,7 @@ public class Packet07FillBucket extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(11).put(7).put(x).put(y).putInt(color).putInt(uuid).array();
+		return Serialize.allocate(12).put(7).put(x).put(y).putInt(color).put(tool).putInt(uuid).array();
 	}
 	
 	public int getX() {
@@ -47,6 +49,10 @@ public class Packet07FillBucket extends Packet {
 	
 	public int getColor() {
 		return color;
+	}
+	
+	public int getTool() {
+		return tool;
 	}
 
 	public int getUUID() {

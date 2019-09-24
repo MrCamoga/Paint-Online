@@ -173,6 +173,7 @@ public class ClientSocket extends Thread {
 	}
 	
 	public void handlePaint(Packet01Paint packet) {
+//		cojones
 		paint.pencil(packet.getX(), packet.getY(), packet.getSize(), packet.getColor(), packet.getUUID());
 	}
 	

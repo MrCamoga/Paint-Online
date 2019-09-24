@@ -1,6 +1,5 @@
 package com.camoga.paint;
 
-import java.awt.HeadlessException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Iterator;
@@ -20,9 +19,9 @@ public class PaintMain extends Thread {
 	public Window window;
 	public static PaintMain main;
 	
-	public static void main(String[] args) throws HeadlessException, UnknownHostException {
-		new PaintMain("213.77.183.253", "null", "MrCamoga" + new Random().nextInt(1000));
-//		new PaintMain().start();
+	public static void main(String[] args) throws UnknownHostException {
+//		new PaintMain("localhost", "null", "MrCamoga" + new Random().nextInt(1000));
+		new PaintMain().start();
 	}
 	
 	public PaintMain() {
@@ -30,7 +29,7 @@ public class PaintMain extends Thread {
 		window = new Window(this);
 	}
 	
-	public PaintMain(String server, String pass, String username) throws HeadlessException, UnknownHostException {
+	public PaintMain(String server, String pass, String username) throws UnknownHostException {
 		main = this;
 		window = new Window(this);
 		

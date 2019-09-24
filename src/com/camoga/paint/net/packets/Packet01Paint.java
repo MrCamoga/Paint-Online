@@ -5,7 +5,7 @@ import com.camoga.paint.net.server.ServerSocket;
 
 public class Packet01Paint extends Packet {
 
-	private int x, y, color, size, uuid;
+	private int x, y, color, size, uuid, tool;
 	
 	public Packet01Paint(byte[] data) {
 		super(01);
@@ -13,15 +13,17 @@ public class Packet01Paint extends Packet {
 		x = s.get();
 		y = s.get();
 		size = s.get();
+		tool = s.get();
 		color = s.getInt();
 		uuid = s.getInt();
 	}
 	
-	public Packet01Paint(int x, int y, int size, int color, int uuid) {
+	public Packet01Paint(int x, int y, int color, int size, int uuid, int tool) {
 		super(01);
 		this.x = x;
 		this.y = y;
 		this.color = color;
+		this.tool = tool;
 		this.size = size;
 		this.uuid = uuid;
 	}
@@ -35,7 +37,7 @@ public class Packet01Paint extends Packet {
 	}
 
 	public byte[] getData() {
-		return Serialize.allocate(12).put(1).put(x).put(y).put(size).putInt(color).putInt(uuid).array();
+		return Serialize.allocate(13).put(1).put(x).put(y).put(size).put(tool).putInt(color).putInt(uuid).array();
 	}
 	
 	public int getX() {
@@ -54,6 +56,10 @@ public class Packet01Paint extends Packet {
 		return size;
 	}
 
+	public int getTool() {
+		return tool;
+	}
+	
 	public int getUUID() {
 		return uuid;
 	}

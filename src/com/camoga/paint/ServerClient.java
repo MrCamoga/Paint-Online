@@ -79,7 +79,7 @@ public class ServerClient extends JPanel implements Runnable {
 		while (running) {
 //			System.out.println(Window.window.serverTabs.getSelectedIndex());
 //			System.out.println(getCurrentPP().image.UUID);
-			System.out.println(ServerManager.currentsc.socketClient.getAddress().getHostAddress());
+//			System.out.println(ServerManager.currentsc.socketClient.getAddress().getHostAddress());
 			if (Window.window.serverTabs.getTitleAt(Window.window.serverTabs.getSelectedIndex()).equals(socketClient.getAddress().getHostAddress())) {
 				long now = System.nanoTime();
 				delta += (now - last) / ns;
@@ -111,7 +111,7 @@ public class ServerClient extends JPanel implements Runnable {
 			if ((ys != lastY) || (xs != lastX)) {
 				switch (tool) {
 				case PENCIL:
-					Packet01Paint paintPacket = new Packet01Paint(xs, ys, brushSize, color, UUID);
+					Packet01Paint paintPacket = new Packet01Paint(xs, ys, color, brushSize, UUID, tool.getId());
 					paintPacket.writeData(socketClient);
 					pencil(xs, ys, brushSize, color, UUID);
 					break;
@@ -120,12 +120,12 @@ public class ServerClient extends JPanel implements Runnable {
 					if (target == color)
 						return;
 					System.out.println("fillbucket");
-					Packet07FillBucket bucketPacket = new Packet07FillBucket(xs, ys, color, UUID);
+					Packet07FillBucket bucketPacket = new Packet07FillBucket(xs, ys, color, tool.getId(), UUID);
 					bucketPacket.writeData(socketClient);
 					floodFill(xs, ys, target, color, UUID);
 					break;
 				case RUBBER:
-					Packet01Paint rubberPacket = new Packet01Paint(xs, ys, brushSize, 0x00, UUID);
+					Packet01Paint rubberPacket = new Packet01Paint(xs, ys, 0x00, brushSize, UUID, tool.getId());
 					rubberPacket.writeData(socketClient);
 					pencil(xs, ys, brushSize, 0x00, UUID);
 					break;
@@ -156,6 +156,7 @@ public class ServerClient extends JPanel implements Runnable {
 
 	public void pencil(int xp, int yp, int size, int color, int UUID) {
 		Image image = getImage(UUID);
+		if(image == null) return;
 		int WIDTH = image.width;
 		int HEIGHT = image.height;
 		for (int y = 0; y < size; y++) {

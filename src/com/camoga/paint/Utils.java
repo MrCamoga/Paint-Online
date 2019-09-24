@@ -8,6 +8,7 @@ import javax.imageio.ImageIO;
 import javax.swing.JFileChooser;
 
 import com.camoga.paint.gui.Window;
+import com.camoga.paint.net.packets.Packet03PixelArray;
 
 public class Utils {
 	public static void saveImage(Image image) {
@@ -51,5 +52,24 @@ public class Utils {
 		}
 
 		return index;
+	}
+	
+	public static Packet03PixelArray[] sendImage(Image image) {
+		int imagesize = image.pixels.length;
+		int l = Packet03PixelArray.packetsize;
+		Packet03PixelArray[] subimages = new Packet03PixelArray[(int)Math.ceil(imagesize/(double)l)];
+		
+		for(int pid = 0; pid < subimages.length; pid++) {
+			int[] pack = new int[l];
+			if(imagesize - pid*l <= l) {
+				pack = new int[imagesize-pid*l];
+			}
+			for(int i = 0; i < pack.length; i++) {
+				pack[i] = image.getPixel(pid*l+i);
+			}
+			subimages[pid] = new Packet03PixelArray(pid, image.UUID, pack);
+		}
+		
+		return subimages;
 	}
 }

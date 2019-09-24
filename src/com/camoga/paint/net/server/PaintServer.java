@@ -1,10 +1,12 @@
 package com.camoga.paint.net.server;
 
 import java.awt.Point;
+import java.awt.Toolkit;
 import java.util.ArrayList;
 import java.util.Random;
 
 import com.camoga.paint.Image;
+import com.camoga.paint.net.packets.Packet03PixelArray;
 
 public class PaintServer {
 
@@ -53,6 +55,7 @@ public class PaintServer {
 	public void floodFill(int x, int y, int targetColor, int color, int uuid) {
 		Image image = getImage(uuid);
 		int width = image.width;
+		Toolkit.getDefaultToolkit().beep();
 		int height = image.height;
 		if(queue.size()>0) queue.remove(0);
 		while(y > 0 && image.getPixel(x, y-1) == targetColor) {
@@ -100,6 +103,7 @@ public class PaintServer {
 		for(Image img : images) {
 			if(img.UUID == UUID) return img;
 		}
+		System.out.println("getImage(uuid) null " + UUID);
 		return null;
 	}
 	
@@ -107,6 +111,12 @@ public class PaintServer {
 		for(int x = x0; x < xf;  x++) {
 			int y = Math.round(y0 + (yf - y0)/(xf - x0)*x);
 			pencil(x, y, size, color, uuid);
+		}
+	}
+
+	public void handlePixelArray(int[] pixels, int num, int uuid) {
+		for (int i = 0; i < pixels.length; i++) {
+			getImage(uuid).setPixel(num * Packet03PixelArray.packetsize + i, pixels[i]);
 		}
 	}
 }

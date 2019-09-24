@@ -146,6 +146,7 @@ public class ServerSocket extends Thread {
 			break;
 		case PAINT:
 			packet = new Packet01Paint(data);
+			if(paint.getImage(((Packet01Paint) packet).getUUID()) == null) break;
 			paint.pencil(((Packet01Paint) packet).getX(), 
 					((Packet01Paint) packet).getY(),
 					((Packet01Paint) packet).getSize(),
@@ -153,8 +154,14 @@ public class ServerSocket extends Thread {
 					((Packet01Paint) packet).getUUID());
 			packet.writeData(this);
 			break;
-			//TODO upload image
+			//DONE upload image
 		case PIXELARRAY:
+			packet = new Packet03PixelArray(data);
+			packet.writeData(this);
+			int num = ((Packet03PixelArray) packet).getNum();
+			int uuid = ((Packet03PixelArray) packet).getUUID();
+			int[] pixels = ((Packet03PixelArray) packet).getPixels();
+			paint.handlePixelArray(pixels, num, uuid);
 			break;
 		case SELECTCOLOR:
 			packet = new Packet04SelectColor(data);
@@ -168,22 +175,19 @@ public class ServerSocket extends Thread {
 		case CHAT:
 			packet = new Packet06Chat(data);
 			commands.print("[" + ((Packet06Chat) packet).getUsername() +"]: " + ((Packet06Chat) packet).getMessage()+"\n");
-//			int index = Main.getClientMPIndex(((Packet06Chat) packet).getUsername(), clients);
-//			sendData(packet.getData(), clients.get(index).address, clients.get(index).port);
 			if(!handleChat((Packet06Chat) packet, address, port)) packet.writeData(this);
 			break;
 		case FILLBUCKET:
 			packet = new Packet07FillBucket(data);
 			int x = ((Packet07FillBucket) packet).getX();
 			int y = ((Packet07FillBucket) packet).getY();
-			int uuid = ((Packet07FillBucket) packet).getUUID();
+			uuid = ((Packet07FillBucket) packet).getUUID();
 			paint.floodFill(x, y, paint.getImage(uuid).getPixel(x, y), ((Packet07FillBucket) packet).getColor(), uuid);
 			packet.writeData(this);
 			break;
 		case NEWIMAGE:
 			packet = new Packet08NewImage(data);
 			paint.addImage(((Packet08NewImage) packet).getWidth(), ((Packet08NewImage) packet).getHeight(), ((Packet08NewImage) packet).getUUID());
-			System.out.println("new image " + ((Packet08NewImage) packet).getUUID());
 			commands.print("new image was created\n");
 			packet.writeData(this);
 			break;
@@ -202,31 +206,25 @@ public class ServerSocket extends Thread {
 		case DELETEIMAGE:
 			packet = new Packet12DeleteImage(data);
 			String username = getClient(address, port).getUsername();
-			//TODO isAdmin
-			for(ClientMP c : admins) {
-				if(username.equals(c.getUsername())) {
-					paint.removeImage(((Packet12DeleteImage) packet).getUUID());
-					Packet12DeleteImage deleteImage = new Packet12DeleteImage(((Packet12DeleteImage) packet).getUUID());
-					deleteImage.writeData(this);
-					commands.print("image " + deleteImage.getUUID() + " was deleted by " + c.getUsername());
-					break;
-				}
+			//DONE isAdmin
+			if(isAdmin(username)) {
+				paint.removeImage(((Packet12DeleteImage) packet).getUUID());
+				Packet12DeleteImage deleteImage = new Packet12DeleteImage(((Packet12DeleteImage) packet).getUUID());
+				deleteImage.writeData(this);
+				commands.print("image " + deleteImage.getUUID() + " was deleted by " + username);
 			}
 			break;
 		case CURSOR:
 			packet = new Packet13Cursor(data);
 			packet.writeData(this);
 		}
-//		System.out.println(packet);
 	}
 	
 	public boolean isAdmin(String username) {
 		for(ClientMP c : admins) {
 			if(username.equals(c.getUsername())) return true;
 		}
-		
 		return false;
-		
 	}
 	
 	private boolean handleChat(Packet06Chat packet, InetAddress address, int port) {
@@ -257,22 +255,9 @@ public class ServerSocket extends Thread {
 	}
 	
 	private void sendImage(InetAddress address, int port, Image image) {
-		int imagesize = image.pixels.length;
-		int l = Packet03PixelArray.packetsize;
-		for(int pid = 0; pid < Math.ceil(imagesize/(double)l); pid++) {
-			int[] pack = new int[l];
-			if(imagesize - pid*l <= l) {
-				pack = new int[imagesize-pid*l];
-				System.out.println(pack.length);
-			}
-			for(int i = 0; i < pack.length; i++) {
-				pack[i] = image.getPixel(pid*l+i);
-			}
-			Packet03PixelArray packet = new Packet03PixelArray(pid, image.UUID, pack);
+		for(Packet03PixelArray packet : Utils.sendImage(image)) {
 			sendData(packet.getData(), address, port);
 		}
-
-		commands.print("Image sent successfully to " + clients.get(Utils.getClientMPIndex(address, port, clients)).getUsername()+ "\n");
 	}
 //
 

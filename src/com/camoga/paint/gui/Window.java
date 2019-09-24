@@ -5,8 +5,10 @@ import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 
 import javax.swing.JFrame;
+import javax.swing.JLabel;
 import javax.swing.JMenu;
 import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
 import javax.swing.JOptionPane;
 import javax.swing.JPanel;
 import javax.swing.JTabbedPane;
@@ -62,12 +64,25 @@ public class Window extends JFrame {
 		JMenu image = new ImageMenu("Image");
 		JMenu tools = new ToolMenu("Tools");
 		JMenu palette = new PaletteMenu("Pallete");
+		JMenu help = new JMenu("Help");
+		JMenuItem todo = new JMenuItem("TO-DO");
+		todo.addActionListener((e)->{
+			JPanel p = new JPanel();
+			JOptionPane.showMessageDialog(null,
+					"capas\n" + 
+					"seleccionar (copiar, pegar etc)\n" + 
+					"zoom\n" + 
+					"cubo de pintura\n" + 
+					"paletas chulas\n"
+					+ "");});
+		help.add(todo);
 		menuBar.add(server);
 		menuBar.add(file);
 		menuBar.add(edit);
 		menuBar.add(image);
 		menuBar.add(tools);
 		menuBar.add(palette);
+		menuBar.add(help);
 
 		north.add(menuBar, BorderLayout.NORTH);
 

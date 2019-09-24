@@ -11,10 +11,23 @@ public class Image {
 	public int UUID;
 
 	public Image(int width, int height, int UUID) {
-		this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
-		this.pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		this(new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB), UUID);
+	}
+	
+	public Image(int[] pixels, int width, int height, int UUID) {
 		this.width = width;
 		this.height = height;
+		this.image = new BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB);
+		this.pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
+		System.arraycopy(pixels, 0, this.pixels, 0, pixels.length);
+		this.UUID = UUID;
+	}
+	
+	public Image(BufferedImage image, int UUID) {
+		this.width = image.getWidth();
+		this.height = image.getHeight();
+		this.image = image;
+		this.pixels = ((DataBufferInt) image.getRaster().getDataBuffer()).getData();
 		this.UUID = UUID;
 	}
 
