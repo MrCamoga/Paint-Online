@@ -1,15 +1,19 @@
 package com.camoga.paint.gui.elements;
 
-import java.awt.Color;
-import java.awt.Font;
-import java.awt.FontMetrics;
-import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 import java.io.IOException;
 
 import javax.imageio.ImageIO;
 
 import com.camoga.paint.ClientMP;
+import com.sun.javafx.tk.FontMetrics;
+import com.sun.javafx.tk.Toolkit;
+
+import javafx.scene.canvas.GraphicsContext;
+import javafx.scene.image.Image;
+import javafx.scene.paint.Color;
+import javafx.scene.text.Font;
+import javafx.scene.text.Text;
 
 public class Cursor {
 	public int x;
@@ -25,7 +29,7 @@ public class Cursor {
 		DEFAULT(0, 0, 0, "default.png"), BUCKET(1, 1, 9, "bucket.png"), 
 		RUBBER(2, 6, 12, "rubber2.png"), PICKCOLOR(3, DEFAULT);
 
-		public BufferedImage cursorImage;
+		public Image cursorImage;
 		public int tool;
 		public int x;
 		public int y;
@@ -36,11 +40,7 @@ public class Cursor {
 			this.x = x;
 			this.y = y;
 			this.path = path;
-			try {
-				cursorImage = ImageIO.read(Cursor.class.getResourceAsStream("/cursors/"+path));
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
+			cursorImage = new Image(Cursor.class.getResourceAsStream("/cursors/"+path));
 		}
 
 		private CursorTypes(int tool, CursorTypes type) {
@@ -74,15 +74,19 @@ public class Cursor {
 		this.uuid = uuid;
 		this.cursor = getCursorType(tool);
 	}
-
-	public void render(Graphics g) {
-		g.setFont(new Font("Cambria", 1, 16));
-		FontMetrics fm = g.getFontMetrics();
-		g.drawImage(cursor.cursorImage, x - cursor.x, y - cursor.y, null);
-		g.setColor(Color.lightGray);
-		g.fillRoundRect(x + 16, y + 7, 2 + fm.stringWidth(client.getUsername()), g.getFont().getSize(), 5, 5);
-		g.setColor(Color.black);
-		g.drawString(client.getUsername(), x + 16, y + 20);
+	
+	static Font font = new Font("Cambria", 16);
+	static FontMetrics fm = Toolkit.getToolkit().getFontLoader().getFontMetrics(font);
+	
+	public void render(GraphicsContext g) {
+		Text txt = new Text(client.getUsername());
+		txt.setFont(font);
+		g.drawImage(cursor.cursorImage, x - cursor.x, y - cursor.y);
+//		System.out.println((x - cursor.x) + ", " + (y - cursor.y));
+		g.setFill(Color.SILVER);
+		g.fillRoundRect(x + 16, y + 7, 2 + txt.getBoundsInLocal().getWidth(), txt.getBoundsInLocal().getHeight(), 5, 5);
+		g.setFill(Color.BLACK);
+		g.fillText(client.getUsername(), x + 16, y + 20);
 	}
 
 	public static CursorTypes getCursorType(int tool) {

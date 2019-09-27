@@ -8,14 +8,16 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
+import javafx.util.Pair;
 
 public class LoginFrame {
 	public static String[] login() {
+		System.out.println("Login frame");
 		Dialog<?> dialog = new Dialog<>();
 		dialog.setTitle("Connect to server");
 		
 		ButtonType loginbuttontype = new ButtonType("Login", ButtonData.OK_DONE);
-		dialog.getDialogPane().getButtonTypes().add(loginbuttontype);
+		dialog.getDialogPane().getButtonTypes().addAll(loginbuttontype, ButtonType.CANCEL);
 		
 		GridPane grid = new GridPane();
 		grid.setHgap(10);
@@ -23,8 +25,8 @@ public class LoginFrame {
 		grid.setPadding(new Insets(20, 150, 10, 10));
 
 		TextField address = new TextField();
-		TextField password = new TextField();
-		TextField username = new TextField();
+		TextField password = new TextField("null");
+		TextField username = new TextField("MrCamoga"+(int)(Math.random()*1000));
 		grid.add(new Label("IP Address: "), 0,0);
 		grid.add(new Label("Password: "), 0,1);
 		grid.add(new Label("Username: "), 0,2);
@@ -33,21 +35,24 @@ public class LoginFrame {
 		grid.add(username, 1,2);
 		
 		Node loginbutton = dialog.getDialogPane().lookupButton(loginbuttontype);
-		loginbutton.setDisable(true);
+		loginbutton.setDisable(!true);
 		
 		username.textProperty().addListener((observable, oldValue, newValue) -> {
 		    loginbutton.setDisable(newValue.trim().isEmpty());
 		});
 		
-		
 		dialog.getDialogPane().setContent(grid);
+		
 		
 		boolean[] ok = new boolean[1];
 		dialog.setResultConverter(d -> {
-			if(d == loginbuttontype) ok[0] = true;
+			if(d == loginbuttontype) {
+				ok[0] = true;
+			}
 			return null;
 		});
 		
+		dialog.showAndWait();
 		if(!ok[0]) return null;
 		return new String[] {address.getText(), password.getText(),username.getText()};
 		

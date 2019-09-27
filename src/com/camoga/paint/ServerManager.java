@@ -1,10 +1,20 @@
 package com.camoga.paint;
 
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import com.camoga.paint.gui.Window;
+import com.camoga.paint.gui.panels.LoginFrame;
 import com.camoga.paint.net.client.ClientSocket;
+import com.camoga.paint.net.packets.Packet05Disconnect;
+import com.camoga.paint.net.packets.Packet10Version;
+import com.camoga.paint.net.packets.Packet11Password;
 
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Tab;
 
 public class ServerManager {
@@ -12,19 +22,68 @@ public class ServerManager {
 	public static ServerClient currentsc;
 	
 	public static void addServer(ClientSocket socket) {
-		ServerClient p = new ServerClient(socket);
-		clients.add(p);
-		socket.paint = p;
-		Window.window.serverTabs.getTabs().add(new Tab(socket.getAddress().getHostAddress(), p));
+		socket.paint = new ServerClient(socket);
+		clients.add(socket.paint);
+		Tab servertab = new Tab(socket.getAddress().getHostAddress(), socket.paint);
+		servertab.setOnCloseRequest(e -> {
+			Alert alert = new Alert(AlertType.CONFIRMATION, "Are you sure you want to disconnect from the server?", ButtonType.YES, ButtonType.NO);
+			alert.setTitle("Disconnect from server");
+			if(alert.showAndWait().get() == ButtonType.YES) {
+				disconnect(socket.paint);
+				e.consume();
+			}
+		});
+		Window.serverTabs.getTabs().add(servertab);
+	}
+	
+	public static void disconnectAll() {
+		for(Iterator<ServerClient> iterator = clients.iterator(); iterator.hasNext();) {
+			ServerClient pc = iterator.next();
+			if(disconnect(pc)) iterator.remove();
+		}
+	}
+	
+	public static void loginForm() {
+		String[] data = LoginFrame.login();
+		if(data == null) return;
+		login(data[0], data[1], data[2]);
+	}
+	
+	public static void login(String ip, String pass, String username) {
+		try {
+			System.out.println(ip + ", " + pass + ", " + username);
+			ClientSocket socketClient = new ClientSocket(InetAddress.getByName(ip), new Client(username));
+			socketClient.start();
+			
+			addServer(socketClient);
+			Packet11Password passwordPacket = new Packet11Password(pass, false);
+			passwordPacket.writeData(socketClient);
+			
+			Packet10Version versionPacket = new Packet10Version(Window.version);
+			versionPacket.writeData(socketClient);			
+		} catch(UnknownHostException e) {
+			e.printStackTrace();
+		}
+	}
+	
+	public static boolean disconnect(ServerClient p) {
+		if(p.socketClient == null) return false;
+		Packet05Disconnect disconnectPacket = new Packet05Disconnect(p.socketClient.client.getUsername());
+		System.err.println("Disconnecting...");
+		clients.remove(p);
+		removeServer(p);
+		disconnectPacket.writeData(p.socketClient);
+		return true;
 	}
 
 	public static void removeServer(ServerClient paint) {
 		paint.stop();
 		paint.disconnect();
-		Window.window.serverTabs.getTabs().remove(Window.window.serverTabs.getSelectionModel().getSelectedIndex());
+		Window.serverTabs.getTabs().remove(Window.serverTabs.getSelectionModel().getSelectedIndex());
 	}
 
 	public static void setCurrent(int index) {
+		System.out.println(clients);
 		if (index < 0) currentsc = null;
 		else currentsc = clients.get(index);
 	}

@@ -14,11 +14,8 @@ public class ServerMenu extends Menu {
 		MenuItem connect = new MenuItem("Connect to server");
 		MenuItem disconnect = new MenuItem("Disconnect from server");
 		MenuItem offline = new MenuItem("Work offline");
-		connect.setOnAction(e -> PaintMain.main.loginPanel());
-		disconnect.setOnAction(e -> {
-			ServerClient current = ServerManager.currentsc;
-			if(PaintMain.main.disconnect(current)) ServerManager.clients.remove(current);
-		});
+		connect.setOnAction(e -> ServerManager.loginForm());
+		disconnect.setOnAction(e -> ServerManager.disconnect(ServerManager.currentsc));
 //		offline.setOnAction(this);
 		getItems().addAll(connect, disconnect, new SeparatorMenuItem(), offline);
 	}

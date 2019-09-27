@@ -6,6 +6,7 @@ import javax.swing.JList;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.net.packets.Packet06Chat;
 
+import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ListView;
 import javafx.scene.control.ScrollPane;
@@ -63,10 +64,12 @@ public class Chat extends BorderPane {
 	}
 
 	public void modifyList(String username, int i) {
-		if (i == -1)
-			connectedUsers.getItems().add(username);
-		else
-			connectedUsers.getItems().remove(username);
+		Platform.runLater(()->{
+			if (i == -1)
+				connectedUsers.getItems().add(username);
+			else
+				connectedUsers.getItems().remove(username);			
+		});
 	}
 
 	public void addText(String msg) {

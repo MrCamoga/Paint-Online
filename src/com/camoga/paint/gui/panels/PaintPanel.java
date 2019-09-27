@@ -1,34 +1,29 @@
 package com.camoga.paint.gui.panels;
 
-import java.awt.Canvas;
-import java.awt.Color;
 import java.awt.Dimension;
-import java.awt.Graphics;
-import java.awt.Point;
-import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.image.BufferStrategy;
-import java.awt.image.BufferedImage;
 
-import javax.swing.JButton;
 import javax.swing.UIManager;
-import javax.swing.event.ChangeEvent;
-import javax.swing.event.ChangeListener;
 
 import com.camoga.paint.Image;
 import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
-import com.camoga.paint.gui.Window;
+import com.camoga.paint.events.MouseHandler;
 import com.camoga.paint.gui.elements.Cursor;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 
+import javafx.animation.AnimationTimer;
+import javafx.embed.swing.SwingFXUtils;
+import javafx.scene.canvas.Canvas;
+import javafx.scene.canvas.GraphicsContext;
 import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 import javafx.scene.control.Slider;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.paint.Color;
 
-public class PaintPanel extends Pane {
+public class PaintPanel extends BorderPane {
 	private ServerClient sc;
 	//TODO selections
 	public int[] pixelsSelected;
@@ -49,57 +44,64 @@ public class PaintPanel extends Pane {
 	public Image image;
 	public Dimension DIMENSION;
 	public int scale;
-	public boolean render = true;
+	public AnimationTimer timer;
 
-	public PaintPanel(final ServerClient sc) {
+	public PaintPanel(final ServerClient sc, int width, int height, int UUID) {
 		this.sc = sc;
-
+		
 //		setLayout(new GroupLayout(this));
 
-		canvas = new Canvas();
-		canvas.setBounds(0, 0, 450, 450);
-		canvas.addMouseListener(Window.window.mouse);
-		canvas.addMouseMotionListener(Window.window.mouse);
-		canvas.addMouseWheelListener(Window.window.mouse);
-		canvas.setCursor(Toolkit.getDefaultToolkit().createCustomCursor(new BufferedImage(1, 1, 2), new Point(0, 0),
-				"transparent"));
-		getChildren().add(canvas);
-		slider.setBounds(20, 512, 100, 40);
-		slider.addChangeListener(new ChangeListener() {
-			public void stateChanged(ChangeEvent e) {
-				brushSize.setText(slider.getValue() + "");
-				sc.brushSize = slider.getValue();
-			}
+		canvas = new Canvas(512,512);
+		canvas.setOnMouseDragged(e -> MouseHandler.mouseDragged(e));
+		canvas.setOnMouseMoved(e -> MouseHandler.mouseMoved(e));
+		canvas.setOnMousePressed(e -> MouseHandler.mousePressed(e));
+		canvas.setOnMouseReleased(e -> MouseHandler.mouseReleased(e));
+		canvas.setCursor(javafx.scene.Cursor.NONE);
+		setCenter(canvas);
+		slider.setOnDragDetected(e -> {
+			brushSize.setText(slider.getValue() + "");
+			sc.brushSize = (int) slider.getValue();
 		});
+		
+		scale = (512 / height);
+		DIMENSION = new Dimension(width, height);
+		image = new Image(width, height, UUID);
+		GraphicsContext g = canvas.getGraphicsContext2D();
+		timer = new AnimationTimer() {
+			public void handle(long now) {
+				render();
+			}
+		};
+		timer.start();
+		
 		try {
 			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
 
-		palette(3,2,3);
-		recentColors(10, 10);
-		colorPicked = new Button();
-		colorPicked.setBounds(200, 512, 100, 100);
-		colorPicked.setEnabled(false);
-		colorPicked.setFocusPainted(false);
-		colorPicked.setBorderPainted(false);
-		add(colorPicked);
-		brushSize.setBounds(60, 542, 400, 10);
+//		palette(3,2,3);
+//		recentColors(10, 10);
+//		colorPicked = new Button();
+//		colorPicked.setBounds(200, 512, 100, 100);
+//		colorPicked.setEnabled(false);
+//		colorPicked.setFocusPainted(false);
+//		colorPicked.setBorderPainted(false);
+//		add(colorPicked);
 		brushSize.setVisible(true);
-		add(brushSize);
+		setBottom(brushSize);
 		try {
 			UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
 		} catch (Exception e1) {
 			e1.printStackTrace();
 		}
-		add(slider);
+		setBottom(slider);
 	}
 	
 	public void recentColors(int width, int height) {
-		recent = new JButton[width*height];
+		recent = new Button[width*height];
 		for (int i = 0; i < recent.length; i++) {
-			recent[i] = new JButton();
+			recent[i] = new Button();
 			recent[i].setFocusPainted(false);
 			recent[i].setBorderPainted(false);
 			recent[i].setBounds(532 + i % width * 8, 540 + i / width * 8, 8, 8);
@@ -115,14 +117,14 @@ public class PaintPanel extends Pane {
 				}
 
 			});
-			add(recent[i]);
+			getChildren().add(recent[i]);
 		}
 	}
 
 	public void palette(int red, int green, int blue) {
 		if(colors != null) {
 			for(Button button : colors) {
-				remove(button);
+				getChildren().remove(button);
 			}
 			//TODO update jframe
 		}
@@ -132,7 +134,7 @@ public class PaintPanel extends Pane {
 		int width = 8 * (1 << green);
 		int height = (1 << red + blue) / width;
 		for (int i = 0; i < colors.length; i++) {
-			colors[i] = new JButton();
+			colors[i] = new Button();
 			colors[i].setFocusPainted(false);
 			colors[i].setBorderPainted(false);
 			colors[i].setBounds(
@@ -158,7 +160,7 @@ public class PaintPanel extends Pane {
 					colorPacket.writeData(sc.socketClient);
 				}
 			});
-			add(colors[i]);
+			getChildren().add(colors[i]);
 		}
 	}
 
@@ -175,36 +177,31 @@ public class PaintPanel extends Pane {
 	}
 
 	public void render() {
-		if(!render) return;
-		BufferStrategy buffer = canvas.getBufferStrategy();
-		if (buffer == null) {
-			canvas.createBufferStrategy(3);
-			return;
-		}
-//		System.out.println("render");
-		Graphics g = buffer.getDrawGraphics();
+		if(sc.getCurrentImageUUID()==null) return;
+	
+		GraphicsContext g = canvas.getGraphicsContext2D();
 
-//		g.setColor(Color.RED);
-//		g.fillRect(0, 0, 512, 512);
+		//Alpha transparency background
 		for(int i = 0; i < DIMENSION.height; i++) {
 			for(int j = 0; j < DIMENSION.width; j++) {
-				g.setColor((i+j)%2==0 ? Color.LIGHT_GRAY:Color.DARK_GRAY);
+				g.setFill((i+j)%2==0 ? Color.SILVER:Color.grayRgb(40));
 				g.fillRect(j*scale, i*scale, scale, scale);
 			}
 		}
 		
 //		System.out.println(sc.getCurrentImage().UUID);
-		g.drawImage(sc.getCurrentImage().getBufferedImage(), canvas.getX(), canvas.getY(), DIMENSION.width * scale,
-				DIMENSION.height * scale, null);
+		g.
+		g.drawImage(SwingFXUtils.toFXImage(sc.getCurrentImage().getBufferedImage(),null), 0, 0, DIMENSION.width*scale,
+				DIMENSION.height*scale);
 
-		g.setColor(Color.red);
+		g.setFill(Color.RED);
 		if (sc.brushSize % 2 == 1)
-			g.drawOval((int) (Window.window.mouse.pos.x - sc.brushSize * 0.5 + 1.0) * scale,
-					(int) (Window.window.mouse.pos.y - sc.brushSize * 0.5 + 1.0) * scale, sc.brushSize * scale,
+			g.strokeOval((int) (MouseHandler.x - sc.brushSize * 0.5 + 1.0) * 1,
+					(int) (MouseHandler.y - sc.brushSize * 0.5 + 1.0) * 1, sc.brushSize * scale,
 					sc.brushSize * scale);
 		else {
-			g.drawOval((int) (Window.window.mouse.pos.x - sc.brushSize * 0.5) * scale,
-					(int) (Window.window.mouse.pos.y - sc.brushSize * 0.5) * scale, sc.brushSize * scale,
+			g.strokeOval((int) (MouseHandler.x - sc.brushSize * 0.5) * 1,
+					(int) (MouseHandler.y - sc.brushSize * 0.5) * 1, sc.brushSize * scale,
 					sc.brushSize * scale);
 		}
 
@@ -213,7 +210,6 @@ public class PaintPanel extends Pane {
 				c.render(g);
 			}
 		}
-		g.dispose();
-		buffer.show();
+		g.restore();
 	}
 }

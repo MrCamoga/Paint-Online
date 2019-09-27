@@ -6,15 +6,11 @@ import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-import java.util.Optional;
-
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
 
 import com.camoga.paint.Client;
 import com.camoga.paint.ClientMP;
-import com.camoga.paint.PaintMain;
 import com.camoga.paint.ServerClient;
+import com.camoga.paint.ServerManager;
 import com.camoga.paint.Utils;
 import com.camoga.paint.gui.Window;
 import com.camoga.paint.net.packets.Packet;
@@ -50,8 +46,6 @@ public class ClientSocket extends Thread {
 		try {
 			socket = new DatagramSocket();
 			this.address = address;
-			
-			//sendData("ping".getBytes());
 		} catch(Exception e) {
 			e.printStackTrace();
 		}
@@ -82,10 +76,7 @@ public class ClientSocket extends Thread {
 		Packet packet = null;
 		switch (type) {
 		default:
-		case INVALID:
-//			System.out.println(new String(data).trim());
-			//throw new RuntimeException("You are not allowed to enter the server or an error has ocurred, if you think that this is an error please contact with mrcamoga@gmail.com");
-			break;
+		case INVALID: break;
 		case LOGIN:
 			packet = new Packet00Login(data);
 			System.out.println("[" + address.getHostAddress() + ":" + port + "] " + ((Packet00Login) packet).getUsername() + " has joined...");
@@ -130,12 +121,12 @@ public class ClientSocket extends Thread {
 			break;
 		case VERSION:
 			packet = new Packet10Version(data);
-			if(!PaintMain.main.version.equals(((Packet10Version) packet).getVersion())) {
+			if(!Window.version.equals(((Packet10Version) packet).getVersion())) {
 				Alert alert = new Alert(AlertType.CONFIRMATION);
 				alert.setTitle("Different version");
-				alert.setHeaderText("You and server have different versions \n Your version: " + PaintMain.main.version + "\n Server version" + ((Packet10Version) packet).getVersion() + ".\n Do you want to continue running the client? This may cause issues!");
+				alert.setHeaderText("You and server have different versions \n Your version: " + Window.version + "\n Server version" + ((Packet10Version) packet).getVersion() + ".\n Do you want to continue running the client? This may cause issues!");
 				
-				if(alert.showAndWait().get() != ButtonType.OK) PaintMain.main.disconnect(paint);
+				if(alert.showAndWait().get() != ButtonType.OK) ServerManager.disconnect(paint);
 			}
 			break;
 		case PASSWORD:
@@ -149,7 +140,7 @@ public class ClientSocket extends Thread {
 				alert.setTitle("Wrong password!");
 				alert.setHeaderText("The password is wrong");
 				alert.show();
-				PaintMain.main.disconnect(paint);
+				ServerManager.disconnect(paint);
 			}
 			break;
 		case DELETEIMAGE:

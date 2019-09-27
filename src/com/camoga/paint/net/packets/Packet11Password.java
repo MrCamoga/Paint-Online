@@ -8,6 +8,7 @@ public class Packet11Password extends Packet {
 	private String password;
 	private boolean correct;
 	
+	//TODO merge with login packet
 	public Packet11Password(byte[] data) {
 		super(11);
 		Serialize s = Serialize.wrap(data, 1, data.length-1);

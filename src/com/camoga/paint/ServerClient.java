@@ -1,11 +1,10 @@
 package com.camoga.paint;
 
-import java.awt.BorderLayout;
-import java.awt.Dimension;
 import java.awt.Point;
 import java.util.ArrayList;
 import java.util.HashMap;
 
+import com.camoga.paint.events.MouseHandler;
 import com.camoga.paint.gui.Window;
 import com.camoga.paint.gui.elements.Cursor;
 import com.camoga.paint.gui.panels.Chat;
@@ -16,6 +15,7 @@ import com.camoga.paint.net.packets.Packet03PixelArray;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 import com.camoga.paint.net.packets.Packet07FillBucket;
 
+import javafx.application.Platform;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
 import javafx.scene.layout.BorderPane;
@@ -53,23 +53,23 @@ public class ServerClient extends BorderPane implements Runnable {
 	public ServerClient(ClientSocket socket) {
 		socketClient = socket;
 		chat = new Chat();
+		tabImages.selectionModelProperty().addListener(c -> {
+			paintpanels.forEach(pp -> pp.timer.stop());
+			paintpanels.get(tabImages.getSelectionModel().getSelectedIndex()).timer.start();
+		});
 		setTop(tabImages);
 		setRight(chat);
 	}
 
 	public void init(int width, int height, int UUID) {
-		PaintPanel pp = new PaintPanel(this);
-		pp.scale = (512 / height);
-		pp.canvas.setSize(512, 512);
-		pp.DIMENSION = new Dimension(width, height);
-		Image img = new Image(width, height, UUID);
-		pp.image = img;
+		PaintPanel pp = new PaintPanel(this, width, height, UUID);
+		
 		paintpanels.add(pp);
 
-		for (int i = 0; i < img.getPixels().length; i++) {
-			img.setPixel(i, 0xffffff);
+		for (int i = 0; i < pp.image.getPixels().length; i++) {
+			pp.image.setPixel(i, 0xffffff);
 		}
-		tabImages.getTabs().add(new Tab(UUID+"", pp));
+		Platform.runLater(()->tabImages.getTabs().add(new Tab(UUID+"", pp)));
 	}
 
 	public void run() {
@@ -80,15 +80,15 @@ public class ServerClient extends BorderPane implements Runnable {
 //			System.out.println(Window.window.serverTabs.getSelectedIndex());
 //			System.out.println(getCurrentPP().image.UUID);
 //			System.out.println(ServerManager.currentsc.socketClient.getAddress().getHostAddress());
-			if (Window.window.serverTabs.getSelectionModel().getSelectedItem().getText().equals(socketClient.getAddress().getHostAddress())) {
+			if (Window.serverTabs.getSelectionModel().getSelectedItem().getText().equals(socketClient.getAddress().getHostAddress())) {
 				long now = System.nanoTime();
 				delta += (now - last) / ns;
 				last = now;
 				while (delta >= 1) {
 					delta--;
 					tick();
+//					render();
 				}
-				render();
 			}
 		}
 	}
@@ -98,14 +98,15 @@ public class ServerClient extends BorderPane implements Runnable {
 
 	public void tick() {
 		// TODO different right - left click actions
-		if (Window.window.mouse.pressed) {
+		if (MouseHandler.pressed) {
+			System.out.println("Mouse pressed");
 			Integer UUID = getCurrentImageUUID();
 			if(UUID == null) return;
 			Image image = getCurrentImage();
 			int WIDTH = image.width;
 			int HEIGHT = image.height;
-			int ys = Window.window.mouse.pos.y;
-			int xs = Window.window.mouse.pos.x;
+			int ys = MouseHandler.y;
+			int xs = MouseHandler.x;
 			if ((xs < 0) || (ys < 0) || (xs >= WIDTH) || (ys >= HEIGHT))
 				return;
 			if ((ys != lastY) || (xs != lastX)) {
@@ -174,11 +175,11 @@ public class ServerClient extends BorderPane implements Runnable {
 		}
 	}
 	
-	public void render() {
+//	public void render() {
 //		if(tabImages.getSelectedIndex() < paintpanels.size() && tabImages.getSelectedIndex() >= 0) {
-			getCurrentPP().render();
+//			getCurrentPP().render();
 //		}
-	}
+//	}
 
 	public void start() {
 		if (running)
@@ -245,23 +246,22 @@ public class ServerClient extends BorderPane implements Runnable {
 	}
 
 	public void removeImage(int UUID) {
-		System.out.println(UUID);
 		//DONE Paint freezes for 15s after deleting image
 		PaintPanel pp = getPP(UUID);
 		System.out.println("Remove PaintPanel " + pp.image.UUID);
-		pp.render = false;
-		try {
-			Thread.sleep(300);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
+		pp.timer.stop();
+//		try {
+//			Thread.sleep(300);
+//		} catch (InterruptedException e) {
+//			e.printStackTrace();
+//		}
 		int i = 0;
 		for(PaintPanel p : paintpanels) {
 			if(p.image.UUID == UUID) break;
 			i++;
 		}
-		paintpanels.remove(pp);
 		tabImages.getTabs().remove(tabImages.getSelectionModel().getSelectedIndex());
+		paintpanels.remove(pp);
 
 	}
 
@@ -319,8 +319,6 @@ public class ServerClient extends BorderPane implements Runnable {
 
 	public Integer getCurrentImageUUID() {
 		if(tabImages.getSelectionModel().getSelectedIndex() < 0) return null;
-//		System.out.println(tabImages.getSelectedIndex());
-//		System.out.println(paintpanels.size());
 		int uuid = paintpanels.get(tabImages.getSelectionModel().getSelectedIndex()).image.UUID;
 		return uuid;
 	}

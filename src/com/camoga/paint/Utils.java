@@ -5,17 +5,18 @@ import java.net.InetAddress;
 import java.util.ArrayList;
 
 import javax.imageio.ImageIO;
-import javax.swing.JFileChooser;
 
 import com.camoga.paint.gui.Window;
 import com.camoga.paint.net.packets.Packet03PixelArray;
 
+import javafx.stage.FileChooser;
+
 public class Utils {
 	public static void saveImage(Image image) {
 		try {
-			JFileChooser filechooser = new JFileChooser();
-			int i = filechooser.showSaveDialog(Window.window);
-			if(i == JFileChooser.APPROVE_OPTION)
+			FileChooser filechooser = new FileChooser();
+			int i = filechooser.showSaveDialog();
+			if(i == FileChooser.APPROVE_OPTION)
 			ImageIO.write(image.getBufferedImage(), "PNG", filechooser.getSelectedFile());
 		} catch (IOException e1) {
 			e1.printStackTrace();
