@@ -29,6 +29,7 @@ public class Window extends Application {
 
 	public static TabPane serverTabs;
 	
+	
 	public static void main(String[] args) {
 		launch(args);
 	}
