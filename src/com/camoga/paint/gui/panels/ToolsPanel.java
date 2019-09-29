@@ -1,15 +1,13 @@
 package com.camoga.paint.gui.panels;
 
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
-
-import javax.swing.JButton;
-import javax.swing.JPanel;
-
 import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
 
+import javax.swing.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 
+@Deprecated
 public class ToolsPanel extends JPanel {
 	public JButton pencil;
 	public JButton bucket;

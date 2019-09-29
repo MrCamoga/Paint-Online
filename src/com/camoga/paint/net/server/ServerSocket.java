@@ -1,7 +1,14 @@
 package com.camoga.paint.net.server;
 
-import java.awt.BorderLayout;
-import java.awt.GraphicsEnvironment;
+import com.camoga.paint.ClientMP;
+import com.camoga.paint.Image;
+import com.camoga.paint.Utils;
+import com.camoga.paint.checkver.Check;
+import com.camoga.paint.net.packets.*;
+import com.camoga.paint.net.packets.Packet.PacketTypes;
+
+import javax.swing.*;
+import java.awt.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -9,29 +16,6 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 import java.util.Scanner;
-
-import javax.swing.JFrame;
-import javax.swing.JTextArea;
-import javax.swing.JTextField;
-
-import com.camoga.paint.ClientMP;
-import com.camoga.paint.Image;
-import com.camoga.paint.Utils;
-import com.camoga.paint.checkver.Check;
-import com.camoga.paint.net.packets.Packet;
-import com.camoga.paint.net.packets.Packet.PacketTypes;
-import com.camoga.paint.net.packets.Packet00Login;
-import com.camoga.paint.net.packets.Packet01Paint;
-import com.camoga.paint.net.packets.Packet03PixelArray;
-import com.camoga.paint.net.packets.Packet04SelectColor;
-import com.camoga.paint.net.packets.Packet05Disconnect;
-import com.camoga.paint.net.packets.Packet06Chat;
-import com.camoga.paint.net.packets.Packet07FillBucket;
-import com.camoga.paint.net.packets.Packet08NewImage;
-import com.camoga.paint.net.packets.Packet10Version;
-import com.camoga.paint.net.packets.Packet11Password;
-import com.camoga.paint.net.packets.Packet12DeleteImage;
-import com.camoga.paint.net.packets.Packet13Cursor;
 
 public class ServerSocket extends Thread {
 	
@@ -274,7 +258,7 @@ public class ServerSocket extends Thread {
 	private void removeConnection(Packet05Disconnect packet, InetAddress address, int port) {
 		int index = Utils.getClientMPIndex(packet.getUsername(), clients);
 		if(index == -1) return;
-		ClientMP client = (ClientMP)clients.remove(index);
+		ClientMP client = clients.remove(index);
 		if(client != null) {
 			commands.print("["+ address.getHostAddress() + ":" + port +"] " + ((Packet05Disconnect) packet).getUsername() + " has disconnected...\n");
 		}

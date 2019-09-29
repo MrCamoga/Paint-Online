@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<commands>
+	<admin info="Edits the admins list">
+		<add info="Adds a new admin to the list"></add>
+		<remove info="Removes an admin from the list"></remove>
+	</admin>
+	<check info="Checks for updates"></check>
+	<delete info="Removes the image with the specified id"></delete>
+	<help info="Shows this message"></help>
+	<list info="Shows a list of the clients connected or the admins">
+		<admin info="Shows a list of the admins"></admin>
+		<client info="Shows a list of the clients connected"></client>
+	</list>
+	<password info="Sets the password to password"></password>
+	<state info="Shows information about the server"></state>
+	<update info="Updates the server"></update>
+	<view info="Shows the image you have specified"></view>
+</commands>

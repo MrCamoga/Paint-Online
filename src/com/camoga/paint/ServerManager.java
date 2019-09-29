@@ -1,27 +1,25 @@
 package com.camoga.paint;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-import java.util.ArrayList;
-import java.util.Iterator;
-
 import com.camoga.paint.gui.Window;
 import com.camoga.paint.gui.panels.LoginFrame;
 import com.camoga.paint.net.client.ClientSocket;
 import com.camoga.paint.net.packets.Packet05Disconnect;
 import com.camoga.paint.net.packets.Packet10Version;
 import com.camoga.paint.net.packets.Packet11Password;
-
 import javafx.scene.control.Alert;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Tab;
+
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.util.ArrayList;
 
 public class ServerManager {
 	public static ArrayList<ServerClient> clients = new ArrayList<ServerClient>();
 	public static ServerClient currentsc;
 	
-	public static void addServer(ClientSocket socket) {
+	private static void addServer(ClientSocket socket) {
 		socket.paint = new ServerClient(socket);
 		clients.add(socket.paint);
 		Tab servertab = new Tab(socket.getAddress().getHostAddress(), socket.paint);
@@ -37,12 +35,9 @@ public class ServerManager {
 	}
 	
 	public static void disconnectAll() {
-		for(Iterator<ServerClient> iterator = clients.iterator(); iterator.hasNext();) {
-			ServerClient pc = iterator.next();
-			if(disconnect(pc)) iterator.remove();
-		}
+        clients.removeIf(ServerManager::disconnect);
 	}
-	
+
 	public static void loginForm() {
 		String[] data = LoginFrame.login();
 		if(data == null) return;
@@ -76,8 +71,7 @@ public class ServerManager {
 		return true;
 	}
 
-	public static void removeServer(ServerClient paint) {
-		paint.stop();
+	private static void removeServer(ServerClient paint) {
 		paint.disconnect();
 		Window.serverTabs.getTabs().remove(Window.serverTabs.getSelectionModel().getSelectedIndex());
 	}

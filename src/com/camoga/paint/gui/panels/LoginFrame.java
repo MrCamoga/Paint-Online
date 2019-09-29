@@ -8,7 +8,6 @@ import javafx.scene.control.Dialog;
 import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.GridPane;
-import javafx.util.Pair;
 
 public class LoginFrame {
 	public static String[] login() {
@@ -35,7 +34,7 @@ public class LoginFrame {
 		grid.add(username, 1,2);
 		
 		Node loginbutton = dialog.getDialogPane().lookupButton(loginbuttontype);
-		loginbutton.setDisable(!true);
+		loginbutton.setDisable(true);
 		
 		username.textProperty().addListener((observable, oldValue, newValue) -> {
 		    loginbutton.setDisable(newValue.trim().isEmpty());
@@ -43,18 +42,7 @@ public class LoginFrame {
 		
 		dialog.getDialogPane().setContent(grid);
 		
-		
-		boolean[] ok = new boolean[1];
-		dialog.setResultConverter(d -> {
-			if(d == loginbuttontype) {
-				ok[0] = true;
-			}
-			return null;
-		});
-		
-		dialog.showAndWait();
-		if(!ok[0]) return null;
-		return new String[] {address.getText(), password.getText(),username.getText()};
-		
+		if(dialog.showAndWait().get() == loginbuttontype) return new String[] {address.getText(), password.getText(),username.getText()};
+		return null;
 	}
 }

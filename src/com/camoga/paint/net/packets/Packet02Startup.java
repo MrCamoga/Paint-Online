@@ -6,23 +6,20 @@ import com.camoga.paint.net.server.ServerSocket;
 @Deprecated
 public class Packet02Startup extends Packet {
 
-	private int width, height, scale, id;
-	
+	private int width, height, id;
+
 	public Packet02Startup(byte[] data) {
 		super(02);
-		String[] dataArray = readData(data).split(",");
-		System.out.println(readData(data));
-		width = Integer.parseInt(dataArray[0]);
-		height = Integer.parseInt(dataArray[1]);
-		scale = Integer.parseInt(dataArray[2]);
-		id = Integer.parseInt(dataArray[3]);
+		Serialize s = Serialize.wrap(data,1,data.length-1);
+		width = s.getInt();
+		height = s.getInt();
+		id = s.getInt();
 	}
-	
-	public Packet02Startup(int width, int height, int scale, int id) {
+
+	public Packet02Startup(int width, int height, int id) {
 		super(02);
 		this.width = width;
 		this.height = height;
-		this.scale = scale;
 		this.id = id;
 	}
 
@@ -35,7 +32,7 @@ public class Packet02Startup extends Packet {
 	}
 
 	public byte[] getData() {
-		return ("02" + width+","+height+","+scale+","+id).getBytes();
+		return Serialize.allocate(12).putInt(width).putInt(height).putInt(id).array();
 	}
 	
 	public int getWidth() {
@@ -44,10 +41,6 @@ public class Packet02Startup extends Packet {
 	
 	public int getHeight() {
 		return height;
-	}
-	
-	public int getScale() {
-		return scale;
 	}
 
 	public int getImage() {

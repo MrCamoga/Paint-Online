@@ -1,32 +1,20 @@
 package com.camoga.paint.gui.menus;
 
-import java.awt.GridLayout;
-import java.awt.event.ActionEvent;
-import java.awt.event.KeyEvent;
-import java.awt.image.BufferedImage;
-import java.io.IOException;
-import java.util.Random;
-
-import javax.imageio.ImageIO;
-import javax.swing.Box;
-import javax.swing.JFileChooser;
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JSpinner;
-import javax.swing.KeyStroke;
-import javax.swing.SpinnerNumberModel;
-
 import com.camoga.paint.Image;
-import com.camoga.paint.PaintMain;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.Utils;
 import com.camoga.paint.net.packets.Packet03PixelArray;
 import com.camoga.paint.net.packets.Packet08NewImage;
 import com.camoga.paint.net.packets.Packet12DeleteImage;
-
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
+
+import javax.imageio.ImageIO;
+import javax.swing.*;
+import java.awt.*;
+import java.awt.image.BufferedImage;
+import java.io.IOException;
+import java.util.Random;
 
 public class FileMenu extends Menu {
 	public FileMenu(String text) {

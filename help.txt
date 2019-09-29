@@ -1,9 +1,0 @@
-/admin <add>/<remove> <username> /Adds or removes that username from the admins
-/delete <imageid> //Deletes the image with that id
-/list 
-	admin //Shows every admin in the server
-	client //Shows every client connected
-/password <password> //Sets the password to <password>
-/state //Shows the state of the server (clients connected, memory usage,...)
-/update <filename> //filename of this program
-/view <imageid> //Creates a view of the image

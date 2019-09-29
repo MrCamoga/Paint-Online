@@ -1,15 +1,14 @@
 package com.camoga.paint.events;
 
-import java.awt.event.MouseWheelEvent;
-
 import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.gui.Window;
 import com.camoga.paint.net.packets.Packet04SelectColor;
 import com.camoga.paint.net.packets.Packet13Cursor;
-
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+
+import java.awt.event.MouseWheelEvent;
 
 public class MouseHandler {
 	
@@ -73,7 +72,7 @@ public class MouseHandler {
 		} else if (e.getButton() == MouseButton.SECONDARY) {
 			ServerClient sc = ServerManager.clients.get(Window.serverTabs.getSelectionModel().getSelectedIndex());
 			int color = sc.getCurrentImage().getPixel(x, y);
-			sc.getCurrentPP().changeColor(color);
+			sc.getCurrentPP().changeSelectedColor(color);
 			Packet04SelectColor colorPacket = new Packet04SelectColor(color);
 			colorPacket.writeData(ServerManager.currentsc.socketClient);
 		}

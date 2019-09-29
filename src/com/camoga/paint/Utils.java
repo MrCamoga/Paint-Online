@@ -1,15 +1,12 @@
 package com.camoga.paint;
 
+import com.camoga.paint.net.packets.Packet03PixelArray;
+import javafx.stage.FileChooser;
+
+import javax.imageio.ImageIO;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.ArrayList;
-
-import javax.imageio.ImageIO;
-
-import com.camoga.paint.gui.Window;
-import com.camoga.paint.net.packets.Packet03PixelArray;
-
-import javafx.stage.FileChooser;
 
 public class Utils {
 	public static void saveImage(Image image) {

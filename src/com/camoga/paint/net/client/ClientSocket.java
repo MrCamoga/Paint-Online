@@ -1,36 +1,19 @@
 package com.camoga.paint.net.client;
 
-import java.awt.Toolkit;
+import com.camoga.paint.*;
+import com.camoga.paint.gui.Window;
+import com.camoga.paint.net.packets.*;
+import com.camoga.paint.net.packets.Packet.PacketTypes;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
+
+import java.awt.*;
 import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.net.SocketTimeoutException;
-
-import com.camoga.paint.Client;
-import com.camoga.paint.ClientMP;
-import com.camoga.paint.ServerClient;
-import com.camoga.paint.ServerManager;
-import com.camoga.paint.Utils;
-import com.camoga.paint.gui.Window;
-import com.camoga.paint.net.packets.Packet;
-import com.camoga.paint.net.packets.Packet.PacketTypes;
-import com.camoga.paint.net.packets.Packet00Login;
-import com.camoga.paint.net.packets.Packet01Paint;
-import com.camoga.paint.net.packets.Packet03PixelArray;
-import com.camoga.paint.net.packets.Packet04SelectColor;
-import com.camoga.paint.net.packets.Packet05Disconnect;
-import com.camoga.paint.net.packets.Packet06Chat;
-import com.camoga.paint.net.packets.Packet07FillBucket;
-import com.camoga.paint.net.packets.Packet08NewImage;
-import com.camoga.paint.net.packets.Packet10Version;
-import com.camoga.paint.net.packets.Packet11Password;
-import com.camoga.paint.net.packets.Packet12DeleteImage;
-import com.camoga.paint.net.packets.Packet13Cursor;
-
-import javafx.scene.control.Alert;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.control.ButtonType;
 
 public class ClientSocket extends Thread {
 	
@@ -92,7 +75,7 @@ public class ClientSocket extends Thread {
 			break;
 		case SELECTCOLOR:
 			packet = new Packet04SelectColor(data);
-			paint.getCurrentPP().addRecentColor(((Packet04SelectColor) packet).getColor());
+//			paint.getCurrentPP().addRecentColor(((Packet04SelectColor) packet).getColor());
 			break;
 		case DISCONNECT:
 			packet = new Packet05Disconnect(data);
@@ -113,7 +96,6 @@ public class ClientSocket extends Thread {
 			int height = ((Packet08NewImage) packet).getHeight();
 			int uuid = ((Packet08NewImage) packet).getUUID();
 			paint.init(width, height, uuid);
-			paint.start();
 			break;
 		case ERROR:
 			//TODO ?
@@ -191,7 +173,7 @@ public class ClientSocket extends Thread {
 	}
 	
 	public void handleChat(Packet06Chat packet) {
-		paint.chat.addText("[" + packet.getUsername() +"]: " + packet.getMessage());
+		paint.chatPanel.addText("[" + packet.getUsername() +"]: " + packet.getMessage());
 		if(!packet.getUsername().equals(client.getUsername())) Toolkit.getDefaultToolkit().beep();
 	}
 	

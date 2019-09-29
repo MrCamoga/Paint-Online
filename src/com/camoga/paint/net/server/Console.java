@@ -1,26 +1,22 @@
 package com.camoga.paint.net.server;
 
-import java.awt.Graphics;
-import java.awt.GraphicsEnvironment;
+import com.camoga.paint.ClientMP;
+import com.camoga.paint.Image;
+import com.camoga.paint.Utils;
+import com.camoga.paint.checkver.Check;
+import com.camoga.paint.net.packets.Packet05Disconnect;
+import org.w3c.dom.Document;
+
+import javax.swing.*;
+import javax.xml.parsers.DocumentBuilder;
+import javax.xml.parsers.DocumentBuilderFactory;
+import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.image.BufferedImage;
 import java.awt.image.DataBufferInt;
 import java.io.FileInputStream;
 import java.io.IOException;
-
-import javax.swing.JFrame;
-import javax.swing.JTextField;
-import javax.xml.parsers.DocumentBuilder;
-import javax.xml.parsers.DocumentBuilderFactory;
-
-import org.w3c.dom.Document;
-
-import com.camoga.paint.ClientMP;
-import com.camoga.paint.Image;
-import com.camoga.paint.Utils;
-import com.camoga.paint.checkver.Check;
-import com.camoga.paint.net.packets.Packet05Disconnect;
 
 public class Console implements ActionListener {
 	private ServerSocket server;
@@ -205,7 +201,7 @@ public class Console implements ActionListener {
 		Document xml = null;
 		try {
 			DocumentBuilder doc = DocumentBuilderFactory.newInstance().newDocumentBuilder();
-			xml = doc.parse(new FileInputStream("com/help.xml"));
+			xml = doc.parse(new FileInputStream("/help.xml"));
 			xml.getDocumentElement().normalize();
 		} catch (Exception e) {
 			e.printStackTrace();

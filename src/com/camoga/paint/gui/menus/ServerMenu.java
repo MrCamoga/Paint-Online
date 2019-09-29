@@ -1,9 +1,6 @@
 package com.camoga.paint.gui.menus;
 
-import com.camoga.paint.PaintMain;
-import com.camoga.paint.ServerClient;
 import com.camoga.paint.ServerManager;
-
 import javafx.scene.control.Menu;
 import javafx.scene.control.MenuItem;
 import javafx.scene.control.SeparatorMenuItem;

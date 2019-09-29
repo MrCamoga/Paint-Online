@@ -1,11 +1,7 @@
 package com.camoga.paint.gui.panels;
 
-import javax.swing.DefaultListModel;
-import javax.swing.JList;
-
 import com.camoga.paint.ServerManager;
 import com.camoga.paint.net.packets.Packet06Chat;
-
 import javafx.application.Platform;
 import javafx.geometry.Orientation;
 import javafx.scene.control.ListView;
@@ -14,13 +10,13 @@ import javafx.scene.control.TextArea;
 import javafx.scene.control.TextField;
 import javafx.scene.layout.BorderPane;
 
-public class Chat extends BorderPane {
+public class ChatPanel extends BorderPane {
 	public TextArea chatBox;
 	public ScrollPane scrollPane;
 	public TextField chatType;
-	public ListView<String> connectedUsers = new ListView<String>();
+	public ListView<String> connectedUsers = new ListView<>();
 
-	public Chat() {
+	public ChatPanel() {
 //		setLayout(new BoxLayout(this, 1));
 //		setBackground(Color.gray);
 		chatBox = new TextArea(); /// 20x50
@@ -41,6 +37,8 @@ public class Chat extends BorderPane {
 			sendMessage.writeData(ServerManager.currentsc.socketClient);
 			chatType.setText("");
 		});
+
+		connectedUsers.setPrefHeight(0);
 		
 		connectedUsers.setOrientation(Orientation.VERTICAL);
 		
@@ -55,7 +53,7 @@ public class Chat extends BorderPane {
 		String[] params = chatType.getText().split(" ");
 		switch (params[0]) {
 			case "/clear":
-				chatBox.setText("Chat cleared");
+				chatBox.setText("ChatPanel cleared");
 				return true;
 //			default:
 //				addText("Command " + params[0] + " was not found");
